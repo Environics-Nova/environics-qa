@@ -12,6 +12,7 @@ import DocumentDetail from "./pages/DocumentDetail";
 import NewProject from "./pages/NewProject";
 import QAQCProcesses from "./pages/QAQCProcesses";
 import Questionnaires from "./pages/Questionnaires";
+import QuestionnaireDetail from "./pages/QuestionnaireDetail";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,7 +38,8 @@ const App = () => (
                   <Route path="/event/:eventId" element={<EventDetail />} />
                   <Route path="/document/:documentId" element={<DocumentDetail />} />
                   <Route path="/qaqc-processes" element={<QAQCProcesses />} />
-                  <Route path="/questionnaires" element={<Questionnaires />} />
+          <Route path="/questionnaires" element={<Questionnaires />} />
+          <Route path="/questionnaires/:id" element={<QuestionnaireDetail />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>

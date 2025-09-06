@@ -183,3 +183,78 @@ export const getRequiredDocuments = (eventTypes: EventType[]): DocumentType[] =>
   
   return requiredDocs;
 };
+
+// Sample Questions
+export const sampleQuestions: Question[] = [
+  {
+    question_id: "q-1",
+    document_1: documentTypes[0], // Drilling Log
+    property_1: "Depth",
+    relation: ">" as const,
+    document_2: documentTypes[0], // Drilling Log  
+    property_2: "PID_Reading",
+    comparison_value: "10",
+    system_value: "15"
+  },
+  {
+    question_id: "q-2", 
+    document_1: documentTypes[1], // Groundwater Monitoring
+    property_1: "pH_Level",
+    relation: "Equals" as const,
+    document_2: documentTypes[1], // Groundwater Monitoring
+    property_2: "Temperature",
+    comparison_value: "7.0",
+    system_value: "6.8"
+  },
+  {
+    question_id: "q-3",
+    document_1: documentTypes[2], // Soil Sample Analysis
+    property_1: "Contaminant_Level", 
+    relation: "Contains" as const,
+    document_2: documentTypes[2], // Soil Sample Analysis
+    property_2: "Sample_Type",
+    comparison_value: "Heavy Metals",
+    system_value: "Lead, Mercury"
+  },
+  {
+    question_id: "q-4",
+    document_1: documentTypes[0], // Drilling Log
+    property_1: "Soil_Type",
+    relation: "Not Equals" as const,
+    document_2: documentTypes[0], // Drilling Log
+    property_2: "Moisture_Content", 
+    comparison_value: "Clay",
+    system_value: "Sandy"
+  }
+];
+
+// Sample Questionnaires
+export const sampleQuestionnaires: Questionnaire[] = [
+  {
+    questionnaire_id: "ques-1",
+    name: "Environmental Compliance Check",
+    description: "Comprehensive questionnaire for environmental assessment compliance verification",
+    event: sampleEvents[0],
+    questions: [sampleQuestions[0], sampleQuestions[1], sampleQuestions[2]]
+  },
+  {
+    questionnaire_id: "ques-2", 
+    name: "Groundwater Quality Assessment",
+    description: "Focused questionnaire for groundwater monitoring and quality control",
+    event: sampleEvents[1],
+    questions: [sampleQuestions[1], sampleQuestions[3]]
+  },
+  {
+    questionnaire_id: "ques-3",
+    name: "Soil Contamination Analysis",
+    description: "Detailed questionnaire for soil sampling and contamination assessment",
+    event: sampleEvents[2],
+    questions: [sampleQuestions[2], sampleQuestions[3]]
+  }
+];
+
+// Helper functions for questionnaires
+export const getQuestionnaireQuestions = (questionnaireId: string): Question[] => {
+  const questionnaire = sampleQuestionnaires.find(q => q.questionnaire_id === questionnaireId);
+  return questionnaire?.questions || [];
+};
