@@ -105,31 +105,17 @@ const QAQCProcessDetail = () => {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="bg-muted p-4 rounded-lg">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <span className="font-medium text-foreground">Document:</span>
-                      <span className="ml-2 text-muted-foreground">{result.question.document_1.name}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-foreground">Property:</span>
-                      <span className="ml-2 text-muted-foreground">{result.question.property_1}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-foreground">Relation:</span>
-                      <span className="ml-2 text-muted-foreground">{result.question.relation}</span>
-                    </div>
-                    <div>
-                      <span className="font-medium text-foreground">
-                        {result.question.document_2 ? "Compare to:" : "Value:"}
-                      </span>
-                      <span className="ml-2 text-muted-foreground">
-                        {result.question.document_2 
-                          ? `${result.question.document_2.name} - ${result.question.property_2}`
-                          : result.question.comparison_value
-                        }
-                      </span>
-                    </div>
-                  </div>
+                  <p className="text-foreground font-medium">
+                    <span className="text-primary">{result.question.property_1}</span> in{" "}
+                    <span className="text-primary">{result.question.document_1.name}</span>{" "}
+                    <span className="text-muted-foreground">{result.question.relation}</span>{" "}
+                    <span className="text-primary">
+                      {result.question.document_2 
+                        ? `${result.question.property_2} in ${result.question.document_2.name}`
+                        : result.question.comparison_value
+                      }
+                    </span>
+                  </p>
                 </div>
                 
                 {result.status === "Failed" && result.comment && (
