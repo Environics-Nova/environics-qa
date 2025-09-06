@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { FileText, Users, Calendar } from "lucide-react";
+import { FileText } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { sampleQuestionnaires } from "@/data/sampleData";
@@ -36,22 +36,8 @@ const Questionnaires = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Calendar className="h-4 w-4 mr-2" />
-                      <span>{questionnaire.event.name}</span>
-                    </div>
-                    <div className="flex items-center text-sm text-muted-foreground">
-                      <Users className="h-4 w-4 mr-2" />
-                      <span>{questionnaire.event.project.name}</span>
-                    </div>
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {questionnaire.event.event_types.map((type) => (
-                        <Badge key={type} variant="outline" className="text-xs">
-                          {type}
-                        </Badge>
-                      ))}
-                    </div>
+                  <div className="text-sm text-muted-foreground">
+                    {questionnaire.questions.length} questions configured
                   </div>
                 </CardContent>
               </Card>

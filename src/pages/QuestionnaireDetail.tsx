@@ -105,21 +105,17 @@ const QuestionnaireDetail = () => {
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <p className="text-sm font-medium text-muted-foreground">Event</p>
-                  <p className="text-foreground">{questionnaire.event.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Project</p>
-                  <p className="text-foreground">{questionnaire.event.project.name}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-muted-foreground">Event Types</p>
-                  <p className="text-foreground">{questionnaire.event.event_types.join(", ")}</p>
+                  <p className="text-sm font-medium text-muted-foreground">Name</p>
+                  <p className="text-foreground">{questionnaire.name}</p>
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Questions</p>
                   <p className="text-foreground">{questionnaire.questions.length}</p>
                 </div>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-muted-foreground">Description</p>
+                <p className="text-foreground">{questionnaire.description}</p>
               </div>
             </CardContent>
           </Card>

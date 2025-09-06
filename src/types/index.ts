@@ -62,7 +62,6 @@ export interface Questionnaire {
   questionnaire_id: string;
   name: string;
   description: string;
-  event: Event;
   questions: Question[];
 }
 

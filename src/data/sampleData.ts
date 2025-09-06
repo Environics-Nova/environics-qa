@@ -234,21 +234,18 @@ export const sampleQuestionnaires: Questionnaire[] = [
     questionnaire_id: "ques-1",
     name: "Environmental Compliance Check",
     description: "Comprehensive questionnaire for environmental assessment compliance verification",
-    event: sampleEvents[0],
     questions: [sampleQuestions[0], sampleQuestions[1], sampleQuestions[2]]
   },
   {
     questionnaire_id: "ques-2", 
     name: "Groundwater Quality Assessment",
     description: "Focused questionnaire for groundwater monitoring and quality control",
-    event: sampleEvents[1],
     questions: [sampleQuestions[1], sampleQuestions[3]]
   },
   {
     questionnaire_id: "ques-3",
     name: "Soil Contamination Analysis",
     description: "Detailed questionnaire for soil sampling and contamination assessment",
-    event: sampleEvents[2],
     questions: [sampleQuestions[2], sampleQuestions[3]]
   }
 ];

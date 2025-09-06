@@ -18,23 +18,14 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Questionnaire, EventType } from "@/types";
-import { sampleEvents } from "@/data/sampleData";
+import { Questionnaire } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
-  eventId: z.string().min(1, "Event is required"),
 });
 
 interface EditQuestionnaireDialogProps {
@@ -57,21 +48,16 @@ export function EditQuestionnaireDialog({
     defaultValues: {
       name: questionnaire.name,
       description: questionnaire.description,
-      eventId: questionnaire.event.event_id,
     },
   });
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
 
-    const selectedEvent = sampleEvents.find(e => e.event_id === values.eventId);
-    if (!selectedEvent) return;
-
     const updatedQuestionnaire: Questionnaire = {
       ...questionnaire,
       name: values.name,
       description: values.description,
-      event: selectedEvent,
     };
 
     onSave(updatedQuestionnaire);
@@ -85,7 +71,7 @@ export function EditQuestionnaireDialog({
         <DialogHeader>
           <DialogTitle>Edit Questionnaire</DialogTitle>
           <DialogDescription>
-            Update the questionnaire details and event assignment.
+            Update the questionnaire details.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -112,35 +98,6 @@ export function EditQuestionnaireDialog({
                   <FormControl>
                     <Textarea {...field} rows={3} />
                   </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="eventId"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Event</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select an event" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {sampleEvents.map((event) => (
-                        <SelectItem key={event.event_id} value={event.event_id}>
-                          <div className="flex flex-col">
-                            <span>{event.name}</span>
-                            <span className="text-xs text-muted-foreground">
-                              {event.project.name} • {event.event_types.join(", ")}
-                            </span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

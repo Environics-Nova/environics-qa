@@ -55,7 +55,8 @@ export function EditQuestionDialog({
   onSave,
 }: EditQuestionDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const availableDocuments = getRequiredDocuments(questionnaire.event.event_types);
+  // For now, use all document types since questionnaires are independent
+  const availableDocuments = questionnaire ? getRequiredDocuments(["Drilling", "GWMS", "SV_Sampling", "Survey"]) : [];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
