@@ -11,6 +11,7 @@ import EventDetail from "./pages/EventDetail";
 import DocumentDetail from "./pages/DocumentDetail";
 import NewProject from "./pages/NewProject";
 import QAQCProcesses from "./pages/QAQCProcesses";
+import QAQCProcessDetail from "./pages/QAQCProcessDetail";
 import Questionnaires from "./pages/Questionnaires";
 import QuestionnaireDetail from "./pages/QuestionnaireDetail";
 import NotFound from "./pages/NotFound";
@@ -38,6 +39,7 @@ const App = () => (
                   <Route path="/event/:eventId" element={<EventDetail />} />
                   <Route path="/document/:documentId" element={<DocumentDetail />} />
                   <Route path="/qaqc-processes" element={<QAQCProcesses />} />
+                  <Route path="/qaqc-processes/:processId" element={<QAQCProcessDetail />} />
           <Route path="/questionnaires" element={<Questionnaires />} />
           <Route path="/questionnaires/:id" element={<QuestionnaireDetail />} />
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

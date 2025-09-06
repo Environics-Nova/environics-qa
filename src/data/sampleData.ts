@@ -247,8 +247,89 @@ export const sampleQuestionnaires: Questionnaire[] = [
   }
 ];
 
+// Sample Results
+export const sampleResults: Result[] = [
+  {
+    question: sampleQuestions[0],
+    status: "Passed",
+    comment: ""
+  },
+  {
+    question: sampleQuestions[1], 
+    status: "Failed",
+    comment: "pH level outside acceptable range"
+  },
+  {
+    question: sampleQuestions[2],
+    status: "Passed",
+    comment: ""
+  }
+];
+
+// Sample QA/QC Processes
+export const sampleQAQCProcesses: QAQCProcess[] = [
+  {
+    process_id: "proc-1",
+    name: "Environmental Compliance Check - Downtown Site",
+    description: "Quality assurance check for environmental compliance",
+    time: "2024-01-22T14:30:00",
+    event: sampleEvents[0],
+    questionnaire: sampleQuestionnaires[0],
+    result: "Failed",
+    results: [sampleResults[0], sampleResults[1], sampleResults[2]]
+  },
+  {
+    process_id: "proc-2", 
+    name: "Groundwater Quality Assessment - Site A",
+    description: "QA/QC process for groundwater monitoring data",
+    time: "2024-02-05T10:15:00",
+    event: sampleEvents[1],
+    questionnaire: sampleQuestionnaires[1], 
+    result: "Passed",
+    results: [
+      {
+        question: sampleQuestions[1],
+        status: "Passed",
+        comment: ""
+      },
+      {
+        question: sampleQuestions[3],
+        status: "Passed", 
+        comment: ""
+      }
+    ]
+  },
+  {
+    process_id: "proc-3",
+    name: "Soil Contamination Analysis - Phase 1",
+    description: "Quality control for soil sampling results",
+    time: "2024-02-15T16:45:00",
+    event: sampleEvents[2],
+    questionnaire: sampleQuestionnaires[2],
+    result: "Passed",
+    results: [
+      {
+        question: sampleQuestions[2],
+        status: "Passed",
+        comment: ""
+      },
+      {
+        question: sampleQuestions[3],
+        status: "Passed",
+        comment: ""
+      }
+    ]
+  }
+];
+
 // Helper functions for questionnaires
 export const getQuestionnaireQuestions = (questionnaireId: string): Question[] => {
   const questionnaire = sampleQuestionnaires.find(q => q.questionnaire_id === questionnaireId);
   return questionnaire?.questions || [];
+};
+
+// Helper functions for QA/QC processes
+export const getQAQCProcessResults = (processId: string): Result[] => {
+  const process = sampleQAQCProcesses.find(p => p.process_id === processId);
+  return process?.results || [];
 };
