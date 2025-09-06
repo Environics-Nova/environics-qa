@@ -26,9 +26,16 @@ const Questionnaires = () => {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <FileText className="h-5 w-5 text-primary" />
-                    <Badge variant="secondary" className="text-xs">
-                      {questionnaire.questions.length} questions
-                    </Badge>
+                    <div className="flex gap-2">
+                      {questionnaire.event_type && (
+                        <Badge variant="outline" className="text-xs">
+                          {questionnaire.event_type}
+                        </Badge>
+                      )}
+                      <Badge variant="secondary" className="text-xs">
+                        {questionnaire.questions.length} questions
+                      </Badge>
+                    </div>
                   </div>
                   <CardTitle className="text-xl">{questionnaire.name}</CardTitle>
                   <CardDescription className="line-clamp-2">

@@ -63,6 +63,7 @@ export interface Questionnaire {
   questionnaire_id: string;
   name: string;
   description: string;
+  event_type?: EventType;
   questions: Question[];
 }
 

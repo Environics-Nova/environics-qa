@@ -18,14 +18,16 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Questionnaire } from "@/types";
+import { Questionnaire, EventType } from "@/types";
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string().min(1, "Description is required"),
+  event_type: z.string().optional(),
 });
 
 interface EditQuestionnaireDialogProps {
@@ -42,12 +44,14 @@ export function EditQuestionnaireDialog({
   onSave,
 }: EditQuestionnaireDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const eventTypes: EventType[] = ["PVV", "GWMS", "Drilling", "SV_Sampling", "Excavation", "Survey"];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: questionnaire.name,
       description: questionnaire.description,
+      event_type: questionnaire.event_type || "",
     },
   });
 
@@ -58,6 +62,7 @@ export function EditQuestionnaireDialog({
       ...questionnaire,
       name: values.name,
       description: values.description,
+      event_type: values.event_type as EventType,
     };
 
     onSave(updatedQuestionnaire);
@@ -98,6 +103,30 @@ export function EditQuestionnaireDialog({
                   <FormControl>
                     <Textarea {...field} rows={3} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="event_type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Event Type</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select event type" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {eventTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
