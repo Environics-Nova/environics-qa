@@ -24,6 +24,7 @@ export interface Project {
 
 export interface Event {
   event_id: string;
+  name: string;
   project: Project;
   start_datetime: string;
   end_datetime: string;

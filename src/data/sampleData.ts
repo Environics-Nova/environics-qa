@@ -68,6 +68,7 @@ export const sampleProjects: Project[] = [
 export const sampleEvents: Event[] = [
   {
     event_id: "evt-1",
+    name: "Initial Site Investigation",
     project: sampleProjects[0],
     start_datetime: "2024-01-20T09:00:00",
     end_datetime: "2024-01-20T17:00:00",
@@ -75,6 +76,7 @@ export const sampleEvents: Event[] = [
   },
   {
     event_id: "evt-2",
+    name: "Groundwater Monitoring Round 1",
     project: sampleProjects[0], 
     start_datetime: "2024-02-01T08:00:00",
     end_datetime: "2024-02-01T16:00:00",
@@ -82,6 +84,7 @@ export const sampleEvents: Event[] = [
   },
   {
     event_id: "evt-3",
+    name: "Vapor Monitoring & Site Survey",
     project: sampleProjects[1],
     start_datetime: "2023-08-15T10:00:00", 
     end_datetime: "2023-08-15T18:00:00",
@@ -89,6 +92,7 @@ export const sampleEvents: Event[] = [
   },
   {
     event_id: "evt-4",
+    name: "Remediation Excavation Phase 1",
     project: sampleProjects[3],
     start_datetime: "2024-02-10T09:30:00",
     end_datetime: "2024-02-10T15:30:00", 

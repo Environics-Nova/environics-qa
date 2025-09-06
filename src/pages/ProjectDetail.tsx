@@ -3,18 +3,25 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { StatusBadge } from "../components/StatusBadge";
+import { EditProjectDialog } from "../components/EditProjectDialog";
 import { sampleProjects, getProjectEvents } from "../data/sampleData";
-import { ArrowLeft, Plus, Edit, Calendar, MapPin, User, Clock } from "lucide-react";
-import { Event } from "../types";
+import { ArrowLeft, Plus, Calendar, MapPin, User, Clock } from "lucide-react";
+import { Event, Project } from "../types";
 
 const ProjectDetail = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
   
-  const project = sampleProjects.find(p => p.project_id === projectId);
+  const [currentProject, setCurrentProject] = useState<Project | undefined>(
+    sampleProjects.find(p => p.project_id === projectId)
+  );
   const events = projectId ? getProjectEvents(projectId) : [];
 
-  if (!project) {
+  const handleProjectUpdate = (updatedProject: Project) => {
+    setCurrentProject(updatedProject);
+  };
+
+  if (!currentProject) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -48,15 +55,15 @@ const ProjectDetail = () => {
                 Back
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">{project.name}</h1>
+                <h1 className="text-3xl font-bold text-foreground">{currentProject.name}</h1>
                 <p className="text-muted-foreground mt-1">Project Details & Events</p>
               </div>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" className="gap-2">
-                <Edit className="w-4 h-4" />
-                Edit Project
-              </Button>
+              <EditProjectDialog 
+                project={currentProject} 
+                onSave={handleProjectUpdate}
+              />
               <Button onClick={() => navigate(`/project/${projectId}/event/new`)} className="gap-2">
                 <Plus className="w-4 h-4" />
                 New Event
@@ -72,7 +79,7 @@ const ProjectDetail = () => {
           <CardHeader>
             <div className="flex justify-between items-start">
               <CardTitle className="text-xl">Project Information</CardTitle>
-              <StatusBadge status={project.status} />
+              <StatusBadge status={currentProject.status} />
             </div>
           </CardHeader>
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -81,14 +88,14 @@ const ProjectDetail = () => {
                 <User className="w-4 h-4 mr-3 text-muted-foreground" />
                 <div>
                   <p className="font-medium">Client</p>
-                  <p className="text-muted-foreground">{project.client}</p>
+                  <p className="text-muted-foreground">{currentProject.client}</p>
                 </div>
               </div>
               <div className="flex items-center text-sm">
                 <MapPin className="w-4 h-4 mr-3 text-muted-foreground" />
                 <div>
                   <p className="font-medium">Location</p>
-                  <p className="text-muted-foreground">{project.location}</p>
+                  <p className="text-muted-foreground">{currentProject.location}</p>
                 </div>
               </div>
             </div>
@@ -97,14 +104,14 @@ const ProjectDetail = () => {
                 <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
                 <div>
                   <p className="font-medium">Start Date</p>
-                  <p className="text-muted-foreground">{new Date(project.start_date).toLocaleDateString()}</p>
+                  <p className="text-muted-foreground">{new Date(currentProject.start_date).toLocaleDateString()}</p>
                 </div>
               </div>
               <div className="flex items-center text-sm">
                 <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
                 <div>
                   <p className="font-medium">End Date</p>
-                  <p className="text-muted-foreground">{new Date(project.end_date).toLocaleDateString()}</p>
+                  <p className="text-muted-foreground">{new Date(currentProject.end_date).toLocaleDateString()}</p>
                 </div>
               </div>
             </div>
@@ -143,7 +150,8 @@ const ProjectDetail = () => {
                     onClick={() => handleEventClick(event.event_id)}
                   >
                     <div className="flex justify-between items-start mb-3">
-                      <div className="flex items-center gap-3">
+                      <div>
+                        <h3 className="font-semibold text-foreground mb-2">{event.name}</h3>
                         <div className="flex items-center gap-2">
                           {event.event_types.map((type, index) => (
                             <span 

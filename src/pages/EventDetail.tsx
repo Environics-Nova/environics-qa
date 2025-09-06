@@ -1,20 +1,28 @@
+import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { StatusBadge } from "../components/StatusBadge";
+import { EditEventDialog } from "../components/EditEventDialog";
 import { sampleEvents, getEventDocuments, getRequiredDocuments } from "../data/sampleData";
-import { ArrowLeft, Edit, Calendar, Clock, Upload, Eye, FileText } from "lucide-react";
-import { Document, DocumentType } from "../types";
+import { ArrowLeft, Calendar, Clock, Upload, Eye, FileText } from "lucide-react";
+import { Document, DocumentType, Event } from "../types";
 
 const EventDetail = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
   
-  const event = sampleEvents.find(e => e.event_id === eventId);
+  const [currentEvent, setCurrentEvent] = useState<Event | undefined>(
+    sampleEvents.find(e => e.event_id === eventId)
+  );
   const documents = eventId ? getEventDocuments(eventId) : [];
-  const requiredDocuments = event ? getRequiredDocuments(event.event_types) : [];
+  const requiredDocuments = currentEvent ? getRequiredDocuments(currentEvent.event_types) : [];
 
-  if (!event) {
+  const handleEventUpdate = (updatedEvent: Event) => {
+    setCurrentEvent(updatedEvent);
+  };
+
+  if (!currentEvent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -86,21 +94,19 @@ const EventDetail = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate(`/project/${event.project.project_id}`)} className="gap-2">
+              <Button variant="ghost" onClick={() => navigate(`/project/${currentEvent.project.project_id}`)} className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
                 Back to Project
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-foreground">
-                  {event.event_types.join(" + ")} Event
-                </h1>
-                <p className="text-muted-foreground mt-1">{event.project.name}</p>
+                <h1 className="text-3xl font-bold text-foreground">{currentEvent.name}</h1>
+                <p className="text-muted-foreground mt-1">{currentEvent.project.name}</p>
               </div>
             </div>
-            <Button variant="outline" className="gap-2">
-              <Edit className="w-4 h-4" />
-              Edit Event
-            </Button>
+            <EditEventDialog 
+              event={currentEvent} 
+              onSave={handleEventUpdate}
+            />
           </div>
         </div>
       </div>
@@ -117,29 +123,32 @@ const EventDetail = () => {
                 <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
                 <div>
                   <p className="font-medium">Start Date & Time</p>
-                  <p className="text-muted-foreground">{new Date(event.start_datetime).toLocaleString()}</p>
+                  <p className="text-muted-foreground">{new Date(currentEvent.start_datetime).toLocaleString()}</p>
                 </div>
               </div>
               <div className="flex items-center text-sm">
-                <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
+                <Clock className="w-4 h-4 mr-3 text-muted-foreground" />
                 <div>
                   <p className="font-medium">End Date & Time</p>
-                  <p className="text-muted-foreground">{new Date(event.end_datetime).toLocaleString()}</p>
+                  <p className="text-muted-foreground">{new Date(currentEvent.end_datetime).toLocaleString()}</p>
                 </div>
               </div>
             </div>
             <div className="space-y-4">
-              <div>
-                <p className="font-medium mb-2">Event Types</p>
-                <div className="flex flex-wrap gap-2">
-                  {event.event_types.map((type, index) => (
-                    <span 
-                      key={index}
-                      className="inline-flex items-center px-3 py-1 rounded-md text-sm font-medium bg-primary text-primary-foreground"
-                    >
-                      {type}
-                    </span>
-                  ))}
+              <div className="flex items-start text-sm">
+                <FileText className="w-4 h-4 mr-3 text-muted-foreground mt-1" />
+                <div>
+                  <p className="font-medium">Event Types</p>
+                  <div className="flex flex-wrap gap-1 mt-1">
+                    {currentEvent.event_types.map((type, index) => (
+                      <span 
+                        key={index}
+                        className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-accent text-accent-foreground"
+                      >
+                        {type}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
@@ -151,7 +160,7 @@ const EventDetail = () => {
           <CardHeader>
             <CardTitle className="text-xl">Required Documents</CardTitle>
             <p className="text-muted-foreground">
-              Documents required based on event types: {event.event_types.join(", ")}
+              Documents required based on event types: {currentEvent.event_types.join(", ")}
             </p>
           </CardHeader>
           <CardContent>
