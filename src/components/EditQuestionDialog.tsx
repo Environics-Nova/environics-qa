@@ -17,6 +17,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -34,10 +35,23 @@ const formSchema = z.object({
   document1Id: z.string().min(1, "Document 1 is required"),
   property1: z.string().min(1, "Property 1 is required"),
   relation: z.enum(["Equals", "Not Equals", "Contains", ">", "<"] as const),
-  document2Id: z.string().min(1, "Document 2 is required"),
-  property2: z.string().min(1, "Property 2 is required"),
-  comparisonValue: z.string().min(1, "Comparison value is required"),
-});
+  secondPartType: z.enum(["document", "value"] as const),
+  document2Id: z.string().optional(),
+  property2: z.string().optional(),
+  comparisonValue: z.string().optional(),
+}).refine(
+  (data) => {
+    if (data.secondPartType === "document") {
+      return data.document2Id && data.property2;
+    } else {
+      return data.comparisonValue;
+    }
+  },
+  {
+    message: "Either document 2 + property 2 OR comparison value is required",
+    path: ["secondPartType"],
+  }
+);
 
 interface EditQuestionDialogProps {
   question: Question | null;
@@ -64,11 +78,14 @@ export function EditQuestionDialog({
       document1Id: question?.document_1.document_type_id || "",
       property1: question?.property_1 || "",
       relation: question?.relation || "Equals",
-      document2Id: question?.document_2.document_type_id || "",
+      secondPartType: question?.document_2 ? "document" : "value",
+      document2Id: question?.document_2?.document_type_id || "",
       property2: question?.property_2 || "",
       comparisonValue: question?.comparison_value || "",
     },
   });
+
+  const secondPartType = form.watch("secondPartType");
 
   const selectedDocument1 = availableDocuments.find(
     doc => doc.document_type_id === form.watch("document1Id")
@@ -82,18 +99,23 @@ export function EditQuestionDialog({
     setIsLoading(true);
 
     const doc1 = availableDocuments.find(d => d.document_type_id === values.document1Id);
-    const doc2 = availableDocuments.find(d => d.document_type_id === values.document2Id);
+    if (!doc1) return;
 
-    if (!doc1 || !doc2) return;
+    let doc2 = undefined;
+    if (values.secondPartType === "document" && values.document2Id) {
+      doc2 = availableDocuments.find(d => d.document_type_id === values.document2Id);
+      if (!doc2) return;
+    }
 
     const updatedQuestion: Question = {
       question_id: question?.question_id || `q-${Date.now()}`,
       document_1: doc1,
       property_1: values.property1,
       relation: values.relation as RelationType,
-      document_2: doc2,
-      property_2: values.property2,
-      comparison_value: values.comparisonValue,
+      ...(values.secondPartType === "document" 
+        ? { document_2: doc2, property_2: values.property2 }
+        : { comparison_value: values.comparisonValue }
+      ),
       system_value: question?.system_value || "",
     };
 
@@ -190,71 +212,100 @@ export function EditQuestionDialog({
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="document2Id"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Document 2</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select document" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {availableDocuments.map((doc) => (
-                          <SelectItem key={doc.document_type_id} value={doc.document_type_id}>
-                            {doc.name}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="property2"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Property 2</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select property" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {selectedDocument2?.properties.map((prop) => (
-                          <SelectItem key={prop} value={prop}>
-                            {prop}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
             <FormField
               control={form.control}
-              name="comparisonValue"
+              name="secondPartType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Comparison Value</FormLabel>
+                  <FormLabel>Second Part Type</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="Enter comparison value" />
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex flex-row space-x-6"
+                    >
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="document" id="document" />
+                        <label htmlFor="document">Document & Property</label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="value" id="value" />
+                        <label htmlFor="value">Fixed Value</label>
+                      </div>
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {secondPartType === "document" ? (
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="document2Id"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Document 2</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select document" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availableDocuments.map((doc) => (
+                            <SelectItem key={doc.document_type_id} value={doc.document_type_id}>
+                              {doc.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="property2"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Property 2</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select property" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {selectedDocument2?.properties.map((prop) => (
+                            <SelectItem key={prop} value={prop}>
+                              {prop}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ) : (
+              <FormField
+                control={form.control}
+                name="comparisonValue"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Comparison Value</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Enter comparison value" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
 
             <DialogFooter>
               <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

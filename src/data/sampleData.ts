@@ -191,9 +191,7 @@ export const sampleQuestions: Question[] = [
     document_1: documentTypes[0], // Drilling Log
     property_1: "Depth",
     relation: ">" as const,
-    document_2: documentTypes[0], // Drilling Log  
-    property_2: "PID_Reading",
-    comparison_value: "10",
+    comparison_value: "10", // Fixed value
     system_value: "15"
   },
   {
@@ -203,7 +201,6 @@ export const sampleQuestions: Question[] = [
     relation: "Equals" as const,
     document_2: documentTypes[1], // Groundwater Monitoring
     property_2: "Temperature",
-    comparison_value: "7.0",
     system_value: "6.8"
   },
   {
@@ -211,9 +208,7 @@ export const sampleQuestions: Question[] = [
     document_1: documentTypes[2], // Soil Sample Analysis
     property_1: "Contaminant_Level", 
     relation: "Contains" as const,
-    document_2: documentTypes[2], // Soil Sample Analysis
-    property_2: "Sample_Type",
-    comparison_value: "Heavy Metals",
+    comparison_value: "Heavy Metals", // Fixed value
     system_value: "Lead, Mercury"
   },
   {
@@ -223,7 +218,6 @@ export const sampleQuestions: Question[] = [
     relation: "Not Equals" as const,
     document_2: documentTypes[0], // Drilling Log
     property_2: "Moisture_Content", 
-    comparison_value: "Clay",
     system_value: "Sandy"
   }
 ];

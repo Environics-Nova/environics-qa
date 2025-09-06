@@ -52,9 +52,10 @@ export interface Question {
   document_1: DocumentType;
   property_1: string;
   relation: RelationType;
-  document_2: DocumentType;
-  property_2: string;
-  comparison_value: string;
+  // Second part can be either document+property OR fixed value
+  document_2?: DocumentType;
+  property_2?: string;
+  comparison_value?: string;
   system_value: string;
 }
 

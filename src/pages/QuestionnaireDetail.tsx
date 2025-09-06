@@ -139,7 +139,7 @@ const QuestionnaireDetail = () => {
                   <TableRow>
                     <TableHead>Document 1 & Property</TableHead>
                     <TableHead>Relation</TableHead>
-                    <TableHead>Document 2/Value & Property</TableHead>
+                    <TableHead>Document 2/Property OR Fixed Value</TableHead>
                     <TableHead className="w-[100px]">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -159,9 +159,14 @@ const QuestionnaireDetail = () => {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          <p className="font-medium">{question.document_2.name}</p>
-                          <p className="text-sm text-muted-foreground">{question.property_2}</p>
-                          <p className="text-xs text-muted-foreground">Value: {question.comparison_value}</p>
+                          {question.document_2 ? (
+                            <>
+                              <p className="font-medium">{question.document_2.name}</p>
+                              <p className="text-sm text-muted-foreground">{question.property_2}</p>
+                            </>
+                          ) : (
+                            <p className="font-medium text-primary">Fixed Value: {question.comparison_value}</p>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
