@@ -98,13 +98,14 @@ export const EditProjectDialog = ({ project, onSave }: EditProjectDialogProps) =
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="endDate">End Date</Label>
+              <Label htmlFor="endDate">End Date (Optional)</Label>
               <Input
                 id="endDate"
                 type="date"
-                value={formData.end_date}
+                value={formData.end_date || ""}
                 onChange={(e) => setFormData({ ...formData, end_date: e.target.value })}
               />
+              <p className="text-xs text-muted-foreground">Leave empty for ongoing projects</p>
             </div>
           </div>
         </div>

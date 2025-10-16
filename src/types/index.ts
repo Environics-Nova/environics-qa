@@ -19,7 +19,7 @@ export interface Project {
   location: string;
   status: ProjectStatus;
   start_date: string;
-  end_date: string;
+  end_date?: string;
 }
 
 export interface Event {

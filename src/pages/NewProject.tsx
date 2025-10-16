@@ -29,7 +29,7 @@ const NewProject = () => {
     e.preventDefault();
     
     // Basic validation
-    if (!formData.name || !formData.client || !formData.location || !formData.start_date || !formData.end_date) {
+    if (!formData.name || !formData.client || !formData.location || !formData.start_date) {
       toast({
         title: "Validation Error",
         description: "Please fill in all required fields.",
@@ -139,14 +139,14 @@ const NewProject = () => {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="end_date">End Date *</Label>
+                  <Label htmlFor="end_date">End Date (Optional)</Label>
                   <Input
                     id="end_date"
                     type="date"
                     value={formData.end_date}
                     onChange={(e) => handleInputChange("end_date", e.target.value)}
-                    required
                   />
+                  <p className="text-xs text-muted-foreground">Leave empty for ongoing projects</p>
                 </div>
               </div>
 

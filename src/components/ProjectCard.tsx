@@ -29,7 +29,7 @@ export const ProjectCard = ({ project, onView }: ProjectCardProps) => {
         </div>
         <div className="flex items-center text-sm text-muted-foreground">
           <Calendar className="w-4 h-4 mr-2" />
-          {new Date(project.start_date).toLocaleDateString()} - {new Date(project.end_date).toLocaleDateString()}
+          {new Date(project.start_date).toLocaleDateString()} - {project.end_date ? new Date(project.end_date).toLocaleDateString() : "Ongoing"}
         </div>
         <div className="pt-2">
           <Button 

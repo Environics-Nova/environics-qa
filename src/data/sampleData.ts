@@ -59,8 +59,8 @@ export const sampleProjects: Project[] = [
     client: "Coastal Properties Inc",
     location: "321 Harbor Dr, Halifax, NS",
     status: "In Progress",
-    start_date: "2024-02-01",
-    end_date: "2024-08-31"
+    start_date: "2024-02-01"
+    // No end_date - ongoing project
   }
 ];
 

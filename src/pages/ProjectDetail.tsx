@@ -111,7 +111,7 @@ const ProjectDetail = () => {
                 <Calendar className="w-4 h-4 mr-3 text-muted-foreground" />
                 <div>
                   <p className="font-medium">End Date</p>
-                  <p className="text-muted-foreground">{new Date(currentProject.end_date).toLocaleDateString()}</p>
+                  <p className="text-muted-foreground">{currentProject.end_date ? new Date(currentProject.end_date).toLocaleDateString() : "Ongoing"}</p>
                 </div>
               </div>
             </div>
