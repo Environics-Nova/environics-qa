@@ -76,24 +76,17 @@ const DocumentDetail = () => {
                 <p className="text-muted-foreground mt-1">{document.file_name}</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              {isEditing ? (
-                <>
-                  <Button variant="outline" onClick={handleCancel}>
-                    Cancel
-                  </Button>
-                  <Button onClick={handleSave} className="gap-2">
-                    <Save className="w-4 h-4" />
-                    Save Changes
-                  </Button>
-                </>
-              ) : (
-                <Button onClick={() => setIsEditing(true)} className="gap-2">
-                  <Edit className="w-4 h-4" />
-                  Edit Properties
+            {isEditing && (
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={handleCancel}>
+                  Cancel
                 </Button>
-              )}
-            </div>
+                <Button onClick={handleSave} className="gap-2">
+                  <Save className="w-4 h-4" />
+                  Save Changes
+                </Button>
+              </div>
+            )}
           </div>
         </div>
       </div>
