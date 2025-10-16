@@ -76,17 +76,6 @@ const DocumentDetail = () => {
                 <p className="text-muted-foreground mt-1">{document.file_name}</p>
               </div>
             </div>
-            {isEditing && (
-              <div className="flex gap-2">
-                <Button variant="outline" onClick={handleCancel}>
-                  Cancel
-                </Button>
-                <Button onClick={handleSave} className="gap-2">
-                  <Save className="w-4 h-4" />
-                  Save Changes
-                </Button>
-              </div>
-            )}
           </div>
         </div>
       </div>
@@ -139,7 +128,17 @@ const DocumentDetail = () => {
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle>Parsed Document Properties</CardTitle>
-              {!isEditing && (
+              {isEditing ? (
+                <div className="flex gap-2">
+                  <Button variant="outline" size="sm" onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button size="sm" onClick={handleSave} className="gap-2">
+                    <Save className="w-4 h-4" />
+                    Save Changes
+                  </Button>
+                </div>
+              ) : (
                 <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="gap-2">
                   <Edit className="w-4 h-4" />
                   Edit
