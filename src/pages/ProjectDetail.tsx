@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button";
 import { StatusBadge } from "../components/StatusBadge";
 import { EditProjectDialog } from "../components/EditProjectDialog";
+import { NewEventDialog } from "../components/NewEventDialog";
 import { sampleProjects, getProjectEvents } from "../data/sampleData";
 import { ArrowLeft, Plus, Calendar, MapPin, User, Clock } from "lucide-react";
 import { Event, Project } from "../types";
@@ -15,10 +16,14 @@ const ProjectDetail = () => {
   const [currentProject, setCurrentProject] = useState<Project | undefined>(
     sampleProjects.find(p => p.project_id === projectId)
   );
-  const events = projectId ? getProjectEvents(projectId) : [];
+  const [events, setEvents] = useState<Event[]>(projectId ? getProjectEvents(projectId) : []);
 
   const handleProjectUpdate = (updatedProject: Project) => {
     setCurrentProject(updatedProject);
+  };
+
+  const handleEventCreate = (newEvent: Event) => {
+    setEvents([...events, newEvent]);
   };
 
   if (!currentProject) {
@@ -59,16 +64,10 @@ const ProjectDetail = () => {
                 <p className="text-muted-foreground mt-1">Project Details & Events</p>
               </div>
             </div>
-            <div className="flex gap-2">
-              <EditProjectDialog 
-                project={currentProject} 
-                onSave={handleProjectUpdate}
-              />
-              <Button onClick={() => navigate(`/project/${projectId}/event/new`)} className="gap-2">
-                <Plus className="w-4 h-4" />
-                New Event
-              </Button>
-            </div>
+            <EditProjectDialog 
+              project={currentProject} 
+              onSave={handleProjectUpdate}
+            />
           </div>
         </div>
       </div>
@@ -123,23 +122,32 @@ const ProjectDetail = () => {
           <CardHeader>
             <div className="flex justify-between items-center">
               <CardTitle className="text-xl">Project Events</CardTitle>
-              <Button onClick={() => navigate(`/project/${projectId}/event/new`)} variant="outline" size="sm" className="gap-2">
-                <Plus className="w-4 h-4" />
-                Add Event
-              </Button>
+              <NewEventDialog 
+                project={currentProject}
+                onSave={handleEventCreate}
+                trigger={
+                  <Button variant="outline" size="sm" className="gap-2">
+                    <Plus className="w-4 h-4" />
+                    Add Event
+                  </Button>
+                }
+              />
             </div>
           </CardHeader>
           <CardContent>
             {events.length === 0 ? (
               <div className="text-center py-8">
                 <p className="text-muted-foreground">No events scheduled for this project.</p>
-                <Button 
-                  onClick={() => navigate(`/project/${projectId}/event/new`)} 
-                  className="mt-4 gap-2"
-                >
-                  <Plus className="w-4 h-4" />
-                  Schedule First Event
-                </Button>
+                <NewEventDialog 
+                  project={currentProject}
+                  onSave={handleEventCreate}
+                  trigger={
+                    <Button className="mt-4 gap-2">
+                      <Plus className="w-4 h-4" />
+                      Schedule First Event
+                    </Button>
+                  }
+                />
               </div>
             ) : (
               <div className="space-y-4">
