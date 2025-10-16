@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
@@ -6,13 +6,14 @@ import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
 import { StatusBadge } from "../components/StatusBadge";
 import { sampleDocuments } from "../data/sampleData";
-import { ArrowLeft, Save, Edit, FileText, Calendar } from "lucide-react";
+import { ArrowLeft, Save, Edit, FileText, Upload } from "lucide-react";
 import { useToast } from "../hooks/use-toast";
 
 const DocumentDetail = () => {
   const { documentId } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   
   const document = sampleDocuments.find(d => d.document_id === documentId);
   const [isEditing, setIsEditing] = useState(false);
@@ -56,6 +57,22 @@ const DocumentDetail = () => {
     }));
   };
 
+  const handleReplaceFile = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // In a real application, this would upload the file to the backend
+      console.log("Replacing document with:", file.name);
+      toast({
+        title: "File Uploaded",
+        description: `${file.name} will be processed and parsed.`,
+      });
+      // Reset the input
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -84,11 +101,29 @@ const DocumentDetail = () => {
         {/* Document Information */}
         <Card className="mb-8">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Document Information
-            </CardTitle>
+            <div className="flex justify-between items-center">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Document Information
+              </CardTitle>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={() => fileInputRef.current?.click()}
+                className="gap-2"
+              >
+                <Upload className="w-4 h-4" />
+                Replace
+              </Button>
+            </div>
           </CardHeader>
+          <input
+            ref={fileInputRef}
+            type="file"
+            className="hidden"
+            onChange={handleReplaceFile}
+            accept=".pdf,.doc,.docx,.txt"
+          />
           <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="space-y-4">
               <div>
