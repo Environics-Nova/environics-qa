@@ -1,73 +1,151 @@
-# Welcome to your Lovable project
+# Environics QA Documentation
 
-## Project info
+Welcome to the **Environics QA** project documentation! This is a comprehensive Environmental Site Assessment Quality Assurance and Quality Control (QA/QC) Management System.
 
-**URL**: https://lovable.dev/projects/fe87d1a6-977e-4114-acde-f10cb15b0202
+## 📚 Documentation Index
 
-## How can I edit this code?
+### Getting Started
+- **[Getting Started Guide](./docs/getting-started.md)** - Installation and first steps
+- **[User Manual](./docs/user-manual.md)** - Complete user guide for end users
 
-There are several ways of editing your application.
+### Technical Documentation
+- **[Architecture Overview](./docs/architecture.md)** - System architecture and design
+- **[Development Setup](./docs/development-setup.md)** - Developer environment setup
+- **[API Documentation](./docs/api-documentation.md)** - API endpoints and data models
+- **[Component Library](./docs/components.md)** - UI component reference
 
-**Use Lovable**
+### Feature Guides
+- **[Project Management](./docs/project-management.md)** - Managing environmental projects
+- **[QA/QC Processes](./docs/qaqc-processes.md)** - Quality control automation
+- **[Questionnaires](./docs/questionnaires.md)** - Creating validation templates
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/fe87d1a6-977e-4114-acde-f10cb15b0202) and start prompting.
+### Development
+- **[Testing Guide](./docs/testing-guide.md)** - Testing strategies and practices
+- **[Deployment Guide](./docs/deployment.md)** - Deployment procedures
+- **[Coding Standards](./docs/coding-standards.md)** - Code style and conventions
 
-Changes made via Lovable will be committed automatically to this repo.
+### Support
+- **[Troubleshooting](./docs/troubleshooting.md)** - Common issues and solutions
+- **[FAQ](./docs/faq.md)** - Frequently asked questions
 
-**Use your preferred IDE**
+## 🎯 Project Overview
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+**Environics QA** is a modern web application designed to streamline the management of environmental site assessment projects. It provides a comprehensive platform for tracking projects, events, documents, and automated QA/QC processes.
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+### Key Features
 
-Follow these steps:
+- **🗂️ Project Management** - Track environmental assessment projects with full lifecycle management
+- **📅 Event Management** - Organize field events (PVV, GWMS, Drilling, Sampling, etc.)
+- **📄 Document Management** - Upload, parse, and manage project documents
+- **✅ Automated QA/QC** - Run quality checks with customizable questionnaires
+- **📊 Results & Reporting** - Detailed validation results and reporting
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
+### Technology Stack
+
+**Frontend:**
+- React 18.3 + TypeScript
+- Vite (Build tool)
+- shadcn/ui + Radix UI (Components)
+- Tailwind CSS (Styling)
+- React Router (Navigation)
+- TanStack Query (State management)
+
+**Development Tools:**
+- ESLint (Linting)
+- TypeScript (Type checking)
+- Bun/npm (Package management)
+
+## 🚀 Quick Start
+
+```bash
+# Clone the repository
 git clone <YOUR_GIT_URL>
+cd environics-qa
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+# Install dependencies
+npm install
 
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Start development server
 npm run dev
 ```
 
-**Edit a file directly in GitHub**
+Visit `http://localhost:5173` to see the application.
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+## 📖 Documentation Navigation
 
-**Use GitHub Codespaces**
+- **New to the project?** Start with the [Getting Started Guide](./docs/getting-started.md)
+- **Developer?** Check out [Development Setup](./docs/development-setup.md)
+- **End user?** See the [User Manual](./docs/user-manual.md)
+- **Need help?** Visit [Troubleshooting](./docs/troubleshooting.md) or [FAQ](./docs/faq.md)
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## 🏗️ Project Structure
 
-## What technologies are used for this project?
+```
+environics-qa/
+├── src/
+│   ├── components/      # Reusable UI components
+│   ├── pages/          # Route page components
+│   ├── types/          # TypeScript definitions
+│   ├── data/           # Sample/mock data
+│   ├── hooks/          # Custom React hooks
+│   └── lib/            # Utility functions
+├── public/             # Static assets
+├── docs/               # This documentation
+└── ...                 # Config files
+```
 
-This project is built with:
+## 📊 System Capabilities
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+### Projects
+Create and manage environmental assessment projects with:
+- Client and location tracking
+- Status management (Not Started, In Progress, Completed, Cancelled)
+- Timeline tracking with start and end dates
+- Associated events and documents
 
-## How can I deploy this project?
+### Events
+Track field activities with support for:
+- **PVV** - Pre-Visit Verification
+- **GWMS** - Groundwater Monitoring System
+- **Drilling** - Drilling operations
+- **SV Sampling** - Soil/Vegetation Sampling
+- **Excavation** - Excavation activities
+- **Survey** - Site surveys
 
-Simply open [Lovable](https://lovable.dev/projects/fe87d1a6-977e-4114-acde-f10cb15b0202) and click on Share -> Publish.
+### Documents
+Manage project documentation with:
+- Multi-format support (PDF, Excel, Word, CSV, Images)
+- Automatic parsing and property extraction
+- Status tracking (Not Uploaded → Processing → Parsed)
+- Property validation
 
-## Can I connect a custom domain to my Lovable project?
+### QA/QC Automation
+Automate quality checks with:
+- Custom questionnaire templates
+- Property comparison (document-to-document or fixed values)
+- Validation operators (Equals, Not Equals, Contains, >, <)
+- Pass/fail results with detailed reporting
 
-Yes, you can!
+## 🔗 External Resources
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+- **Lovable Project**: https://lovable.dev/projects/fe87d1a6-977e-4114-acde-f10cb15b0202
+- **React Documentation**: https://react.dev
+- **shadcn/ui**: https://ui.shadcn.com
+- **Tailwind CSS**: https://tailwindcss.com
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+## 📝 Contributing
+
+This is a proprietary project for Environics. For development guidelines, see:
+- [Coding Standards](./docs/coding-standards.md)
+- [Development Setup](./docs/development-setup.md)
+
+## 📧 Support
+
+For questions or issues:
+1. Check the [FAQ](./docs/faq.md)
+2. Review [Troubleshooting](./docs/troubleshooting.md)
+3. Contact the development team
+
+---
+
+*Documentation Last Updated: November 8, 2025*
