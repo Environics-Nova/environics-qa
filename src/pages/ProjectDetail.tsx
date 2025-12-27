@@ -86,7 +86,7 @@ const ProjectDetail = () => {
   const handleDeleteProject = async () => {
     try {
       await del(`/api/v1/projects/${projectId}`);
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       const apiError = err as ApiError;
       setError(apiError.message || "Failed to delete project");
@@ -109,7 +109,7 @@ const ProjectDetail = () => {
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-4">{error || "Project Not Found"}</h1>
-          <Button onClick={() => navigate("/")} variant="outline">
+          <Button onClick={() => navigate("/dashboard")} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>
@@ -129,7 +129,7 @@ const ProjectDetail = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
+              <Button variant="ghost" onClick={() => navigate("/dashboard")} className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
                 Back
               </Button>

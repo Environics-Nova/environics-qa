@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/sidebar";
 
 const items = [
-  { title: "Home", url: "/", icon: Home },
+  { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "QA/QC Processes", url: "/qaqc-processes", icon: CheckSquare },
   { title: "Questionnaires", url: "/questionnaires", icon: FileText },
 ];
@@ -31,9 +31,9 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarHeader className="p-4 border-b border-border">
         <OrganizationSwitcher
-          afterCreateOrganizationUrl="/"
-          afterSelectOrganizationUrl="/"
-          afterLeaveOrganizationUrl="/"
+          afterCreateOrganizationUrl="/dashboard"
+          afterSelectOrganizationUrl="/dashboard"
+          afterLeaveOrganizationUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "w-full",

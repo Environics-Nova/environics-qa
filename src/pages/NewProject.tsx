@@ -97,7 +97,7 @@ const NewProject = () => {
         <div className="border-b border-border bg-card">
           <div className="container mx-auto px-6 py-6">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
+              <Button variant="ghost" onClick={() => navigate("/dashboard")} className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
                 Back to Dashboard
               </Button>
@@ -127,7 +127,7 @@ const NewProject = () => {
       <div className="border-b border-border bg-card">
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate("/")} className="gap-2">
+            <Button variant="ghost" onClick={() => navigate("/dashboard")} className="gap-2">
               <ArrowLeft className="w-4 h-4" />
               Back to Dashboard
             </Button>
@@ -243,7 +243,7 @@ const NewProject = () => {
                 <Button 
                   type="button" 
                   variant="outline" 
-                  onClick={() => navigate("/")} 
+                  onClick={() => navigate("/dashboard")} 
                   className="flex-1"
                   disabled={loading}
                 >

@@ -8,6 +8,7 @@ import { UserButton } from "@clerk/clerk-react";
 import { AppSidebar } from "@/components/AppSidebar";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
+import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import ProjectDetail from "./pages/ProjectDetail";
 import EventDetail from "./pages/EventDetail";
@@ -46,6 +47,9 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
+          {/* Public landing page */}
+          <Route path="/" element={<Landing />} />
+
           {/* Public auth routes */}
           <Route
             path="/sign-in/*"
@@ -66,7 +70,7 @@ const App = () => (
 
           {/* Protected routes with authenticated layout */}
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <ProtectedRoute>
                 <AuthenticatedLayout>

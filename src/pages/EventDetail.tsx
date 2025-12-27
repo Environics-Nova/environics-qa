@@ -118,7 +118,7 @@ const EventDetail = () => {
         <div className="text-center">
           <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-foreground mb-4">{error || "Event Not Found"}</h1>
-          <Button onClick={() => navigate("/")} variant="outline">
+          <Button onClick={() => navigate("/dashboard")} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
           </Button>

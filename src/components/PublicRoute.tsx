@@ -20,7 +20,7 @@ const PublicRoute = ({ children }: PublicRouteProps) => {
 
   // Redirect authenticated users away from auth pages
   if (isSignedIn) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/dashboard" replace />;
   }
 
   // Render children for unauthenticated users
