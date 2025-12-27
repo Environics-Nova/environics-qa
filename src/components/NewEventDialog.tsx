@@ -3,9 +3,10 @@ import { Button } from "./ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Project, Event, EventType } from "../types";
-import { Plus } from "lucide-react";
+import { Project, Event, EventType, ApiResponse, CreateEventRequest } from "../types";
+import { Plus, Loader2 } from "lucide-react";
 import { toast } from "./ui/use-toast";
+import { useApiClient, ApiError } from "../hooks/use-api-client";
 
 interface NewEventDialogProps {
   project: Project;
@@ -17,6 +18,8 @@ const eventTypeOptions: EventType[] = ["Drilling", "GWMS", "SV_Sampling", "PVV",
 
 export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps) => {
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const { post } = useApiClient();
   const [formData, setFormData] = useState({
     name: "",
     start_datetime: "",
@@ -24,7 +27,7 @@ export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps
     event_types: [] as EventType[]
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.name || !formData.start_datetime || !formData.end_datetime || formData.event_types.length === 0) {
@@ -36,28 +39,46 @@ export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps
       return;
     }
 
-    const newEvent: Event = {
-      event_id: `evt-${Date.now()}`,
-      name: formData.name,
-      project: project,
-      start_datetime: formData.start_datetime,
-      end_datetime: formData.end_datetime,
-      event_types: formData.event_types
-    };
+    setLoading(true);
 
-    onSave(newEvent);
-    setOpen(false);
-    setFormData({
-      name: "",
-      start_datetime: "",
-      end_datetime: "",
-      event_types: []
-    });
-    
-    toast({
-      title: "Success",
-      description: "Event created successfully."
-    });
+    try {
+      const requestData: CreateEventRequest = {
+        name: formData.name,
+        start_datetime: new Date(formData.start_datetime).toISOString(),
+        end_datetime: new Date(formData.end_datetime).toISOString(),
+        event_types: formData.event_types
+      };
+
+      const response = await post<ApiResponse<Event>>(
+        `/api/v1/projects/${project.id}/events`,
+        requestData
+      );
+
+      if (response.data) {
+        onSave(response.data);
+        setOpen(false);
+        setFormData({
+          name: "",
+          start_datetime: "",
+          end_datetime: "",
+          event_types: []
+        });
+        
+        toast({
+          title: "Success",
+          description: "Event created successfully."
+        });
+      }
+    } catch (err) {
+      const apiError = err as ApiError;
+      toast({
+        title: "Error",
+        description: apiError.message || "Failed to create event",
+        variant: "destructive"
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const toggleEventType = (type: EventType) => {
@@ -91,6 +112,7 @@ export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               placeholder="Enter event name"
+              disabled={loading}
             />
           </div>
 
@@ -102,6 +124,7 @@ export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps
                 type="datetime-local"
                 value={formData.start_datetime}
                 onChange={(e) => setFormData({ ...formData, start_datetime: e.target.value })}
+                disabled={loading}
               />
             </div>
             <div className="space-y-2">
@@ -111,6 +134,7 @@ export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps
                 type="datetime-local"
                 value={formData.end_datetime}
                 onChange={(e) => setFormData({ ...formData, end_datetime: e.target.value })}
+                disabled={loading}
               />
             </div>
           </div>
@@ -123,11 +147,12 @@ export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps
                   key={type}
                   type="button"
                   onClick={() => toggleEventType(type)}
+                  disabled={loading}
                   className={`px-3 py-2 rounded-md text-sm font-medium border transition-colors ${
                     formData.event_types.includes(type)
                       ? "bg-primary text-primary-foreground border-primary"
                       : "bg-background border-border hover:bg-muted"
-                  }`}
+                  } ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
                 >
                   {type}
                 </button>
@@ -136,10 +161,13 @@ export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => setOpen(false)}>
+            <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit">Create Event</Button>
+            <Button type="submit" disabled={loading}>
+              {loading && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
+              Create Event
+            </Button>
           </div>
         </form>
       </DialogContent>

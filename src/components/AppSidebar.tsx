@@ -1,11 +1,13 @@
 import { Home, CheckSquare, FileText } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
+import { OrganizationSwitcher } from "@clerk/clerk-react";
 
 import {
   Sidebar,
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
@@ -27,6 +29,19 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon">
+      <SidebarHeader className="p-4 border-b border-border">
+        <OrganizationSwitcher
+          afterCreateOrganizationUrl="/"
+          afterSelectOrganizationUrl="/"
+          afterLeaveOrganizationUrl="/"
+          appearance={{
+            elements: {
+              rootBox: "w-full",
+              organizationSwitcherTrigger: "w-full justify-start",
+            },
+          }}
+        />
+      </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <SidebarGroupContent>

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -28,8 +28,7 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Question, Questionnaire, RelationType } from "@/types";
-import { getRequiredDocuments } from "@/data/sampleData";
+import { Question, Questionnaire, RelationType, DocumentType } from "@/types";
 
 const formSchema = z.object({
   document1Id: z.string().min(1, "Document 1 is required"),
@@ -56,6 +55,7 @@ const formSchema = z.object({
 interface EditQuestionDialogProps {
   question: Question | null;
   questionnaire: Questionnaire;
+  documentTypes: DocumentType[];
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: (question: Question) => void;
@@ -64,61 +64,71 @@ interface EditQuestionDialogProps {
 export function EditQuestionDialog({
   question,
   questionnaire,
+  documentTypes,
   open,
   onOpenChange,
   onSave,
 }: EditQuestionDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  // Filter documents based on questionnaire event type
-  const availableDocuments = questionnaire?.event_type 
-    ? getRequiredDocuments([questionnaire.event_type])
-    : getRequiredDocuments(["Drilling", "GWMS", "SV_Sampling", "Survey"]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      document1Id: question?.document_1.document_type_id || "",
-      property1: question?.property_1 || "",
-      relation: question?.relation || "Equals",
-      secondPartType: question?.document_2 ? "document" : "value",
-      document2Id: question?.document_2?.document_type_id || "",
-      property2: question?.property_2 || "",
-      comparisonValue: question?.comparison_value || "",
+      document1Id: "",
+      property1: "",
+      relation: "Equals",
+      secondPartType: "value",
+      document2Id: "",
+      property2: "",
+      comparisonValue: "",
     },
   });
 
+  // Reset form when question changes
+  useEffect(() => {
+    if (open) {
+      form.reset({
+        document1Id: question?.document_1_id || question?.document_1?.id || "",
+        property1: question?.property_1 || "",
+        relation: question?.relation || "Equals",
+        secondPartType: question?.document_2_id || question?.document_2 ? "document" : "value",
+        document2Id: question?.document_2_id || question?.document_2?.id || "",
+        property2: question?.property_2 || "",
+        comparisonValue: question?.comparison_value || "",
+      });
+    }
+  }, [question, open, form]);
+
   const secondPartType = form.watch("secondPartType");
+  const document1Id = form.watch("document1Id");
+  const document2Id = form.watch("document2Id");
 
-  const selectedDocument1 = availableDocuments.find(
-    doc => doc.document_type_id === form.watch("document1Id")
-  );
-
-  const selectedDocument2 = availableDocuments.find(
-    doc => doc.document_type_id === form.watch("document2Id")
-  );
+  const selectedDocument1 = documentTypes.find(doc => doc.id === document1Id);
+  const selectedDocument2 = documentTypes.find(doc => doc.id === document2Id);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
 
-    const doc1 = availableDocuments.find(d => d.document_type_id === values.document1Id);
-    if (!doc1) return;
-
-    let doc2 = undefined;
-    if (values.secondPartType === "document" && values.document2Id) {
-      doc2 = availableDocuments.find(d => d.document_type_id === values.document2Id);
-      if (!doc2) return;
+    const doc1 = documentTypes.find(d => d.id === values.document1Id);
+    if (!doc1) {
+      setIsLoading(false);
+      return;
     }
 
     const updatedQuestion: Question = {
-      question_id: question?.question_id || `q-${Date.now()}`,
-      document_1: doc1,
+      id: question?.id || `q-${Date.now()}`,
+      questionnaire_id: questionnaire.id,
+      document_1_id: values.document1Id,
       property_1: values.property1,
       relation: values.relation as RelationType,
-      ...(values.secondPartType === "document" 
-        ? { document_2: doc2, property_2: values.property2 }
-        : { comparison_value: values.comparisonValue }
-      ),
+      document_2_id: values.secondPartType === "document" ? values.document2Id : undefined,
+      property_2: values.secondPartType === "document" ? values.property2 : undefined,
+      comparison_value: values.secondPartType === "value" ? values.comparisonValue : undefined,
       system_value: question?.system_value || "",
+      document_1: doc1,
+      document_2: values.secondPartType === "document" 
+        ? documentTypes.find(d => d.id === values.document2Id) 
+        : undefined,
     };
 
     onSave(updatedQuestion);
@@ -144,15 +154,15 @@ export function EditQuestionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Document 1</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select document" />
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {availableDocuments.map((doc) => (
-                          <SelectItem key={doc.document_type_id} value={doc.document_type_id}>
+                        {documentTypes.map((doc) => (
+                          <SelectItem key={doc.id} value={doc.id}>
                             {doc.name}
                           </SelectItem>
                         ))}
@@ -169,7 +179,7 @@ export function EditQuestionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Property 1</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Select property" />
@@ -195,7 +205,7 @@ export function EditQuestionDialog({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Relation</FormLabel>
-                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select relation" />
@@ -223,7 +233,7 @@ export function EditQuestionDialog({
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="flex flex-row space-x-6"
                     >
                       <div className="flex items-center space-x-2">
@@ -249,15 +259,15 @@ export function EditQuestionDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Document 2</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select document" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {availableDocuments.map((doc) => (
-                            <SelectItem key={doc.document_type_id} value={doc.document_type_id}>
+                          {documentTypes.map((doc) => (
+                            <SelectItem key={doc.id} value={doc.id}>
                               {doc.name}
                             </SelectItem>
                           ))}
@@ -274,7 +284,7 @@ export function EditQuestionDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Property 2</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select property" />

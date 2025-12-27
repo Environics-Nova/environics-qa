@@ -1,36 +1,113 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { StatusBadge } from "../components/StatusBadge";
 import { EditProjectDialog } from "../components/EditProjectDialog";
 import { NewEventDialog } from "../components/NewEventDialog";
-import { sampleProjects, getProjectEvents } from "../data/sampleData";
-import { ArrowLeft, Plus, Calendar, MapPin, User, Clock } from "lucide-react";
-import { Event, Project } from "../types";
+import { ArrowLeft, Plus, Calendar, MapPin, User, Clock, Loader2, AlertCircle } from "lucide-react";
+import { Event, Project, ApiResponse } from "../types";
+import { useApiClient, ApiError } from "../hooks/use-api-client";
+import { Alert, AlertDescription, AlertTitle } from "../components/ui/alert";
 
 const ProjectDetail = () => {
   const { projectId } = useParams();
   const navigate = useNavigate();
+  const { get, put, del, hasOrganization, isLoaded } = useApiClient();
   
-  const [currentProject, setCurrentProject] = useState<Project | undefined>(
-    sampleProjects.find(p => p.project_id === projectId)
-  );
-  const [events, setEvents] = useState<Event[]>(projectId ? getProjectEvents(projectId) : []);
+  const [currentProject, setCurrentProject] = useState<Project | null>(null);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleProjectUpdate = (updatedProject: Project) => {
-    setCurrentProject(updatedProject);
+  // Fetch project and events from API
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isLoaded || !projectId) return;
+      
+      if (!hasOrganization) {
+        setLoading(false);
+        setError("Please select an organization to view project details.");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch project details
+        const projectResponse = await get<ApiResponse<Project>>(`/api/v1/projects/${projectId}`);
+        if (projectResponse.data) {
+          setCurrentProject(projectResponse.data);
+        }
+
+        // Fetch events for this project
+        const eventsResponse = await get<ApiResponse<Event[]>>(`/api/v1/projects/${projectId}/events`);
+        setEvents(eventsResponse.data || []);
+      } catch (err) {
+        const apiError = err as ApiError;
+        if (apiError.status === 404) {
+          setError("Project not found");
+        } else {
+          setError(apiError.message || "Failed to load project");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [get, projectId, hasOrganization, isLoaded]);
+
+  const handleProjectUpdate = async (updatedProject: Project) => {
+    try {
+      const response = await put<ApiResponse<Project>>(`/api/v1/projects/${projectId}`, {
+        name: updatedProject.name,
+        client: updatedProject.client,
+        location: updatedProject.location,
+        status: updatedProject.status,
+        start_date: updatedProject.start_date,
+        end_date: updatedProject.end_date,
+      });
+      if (response.data) {
+        setCurrentProject(response.data);
+      }
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.message || "Failed to update project");
+    }
   };
 
   const handleEventCreate = (newEvent: Event) => {
     setEvents([...events, newEvent]);
   };
 
-  if (!currentProject) {
+  const handleDeleteProject = async () => {
+    try {
+      await del(`/api/v1/projects/${projectId}`);
+      navigate("/");
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.message || "Failed to delete project");
+    }
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Error or not found state
+  if (error || !currentProject) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Project Not Found</h1>
+          <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-4">{error || "Project Not Found"}</h1>
           <Button onClick={() => navigate("/")} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -42,10 +119,6 @@ const ProjectDetail = () => {
 
   const handleEventClick = (eventId: string) => {
     navigate(`/event/${eventId}`);
-  };
-
-  const formatEventTypes = (eventTypes: string[]) => {
-    return eventTypes.join(", ");
   };
 
   return (
@@ -153,9 +226,9 @@ const ProjectDetail = () => {
               <div className="space-y-4">
                 {events.map((event) => (
                   <div 
-                    key={event.event_id}
+                    key={event.id}
                     className="border border-border rounded-lg p-4 hover:bg-muted/50 cursor-pointer transition-colors"
-                    onClick={() => handleEventClick(event.event_id)}
+                    onClick={() => handleEventClick(event.id)}
                   >
                     <div className="flex justify-between items-start mb-3">
                       <div>
@@ -173,7 +246,7 @@ const ProjectDetail = () => {
                       </div>
                       <Button variant="outline" size="sm" onClick={(e) => {
                         e.stopPropagation();
-                        handleEventClick(event.event_id);
+                        handleEventClick(event.id);
                       }}>
                         View Details
                       </Button>

@@ -1,4 +1,4 @@
-import { useAuth } from "@clerk/clerk-react";
+import { useAuth, useOrganization } from "@clerk/clerk-react";
 import { useCallback } from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:3000";
@@ -10,20 +10,38 @@ export interface ApiClientOptions extends Omit<RequestInit, "headers"> {
 export interface ApiError {
   message: string;
   status: number;
+  code?: string;
+}
+
+export interface ApiResponse<T> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+  code?: string;
+  pagination?: {
+    page: number;
+    page_size: number;
+    total: number;
+    total_pages: number;
+  };
 }
 
 /**
  * Custom hook that provides an authenticated API client using Clerk JWT tokens.
  * The token is automatically refreshed by Clerk when needed.
+ * Includes organization context from Clerk Organizations.
  *
  * @returns Object containing the fetch wrapper and loading state
  */
 export function useApiClient() {
   const { getToken, isLoaded, isSignedIn } = useAuth();
+  const { organization } = useOrganization();
 
   /**
    * Makes an authenticated API request with the Clerk JWT token.
    * Automatically includes the Authorization header with Bearer token.
+   * The JWT token includes organization context when user has selected an organization.
    *
    * @param endpoint - API endpoint path (e.g., "/api/v1/users")
    * @param options - Fetch options (method, body, etc.)
@@ -32,8 +50,9 @@ export function useApiClient() {
    */
   const apiFetch = useCallback(
     async <T = unknown>(endpoint: string, options: ApiClientOptions = {}): Promise<T> => {
-      // Get fresh token from Clerk (handles refresh automatically)
-      const token = await getToken();
+      // Get fresh token from Clerk with organization context
+      // When user has selected an organization, we need to explicitly request a token for that org
+      const token = await getToken({ organizationId: organization?.id });
 
       const { headers: customHeaders, ...restOptions } = options;
 
@@ -55,16 +74,31 @@ export function useApiClient() {
       // Handle non-OK responses
       if (!response.ok) {
         let errorMessage = "An error occurred";
+        let errorCode: string | undefined;
+        
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || errorData.message || errorMessage;
+          // Handle nested error structure: { success: false, error: { code, message } }
+          if (errorData.error && typeof errorData.error === 'object') {
+            errorMessage = errorData.error.message || errorMessage;
+            errorCode = errorData.error.code;
+          } else {
+            errorMessage = errorData.error || errorData.message || errorMessage;
+            errorCode = errorData.code;
+          }
         } catch {
           errorMessage = response.statusText || errorMessage;
+        }
+
+        // Special handling for 400 - no organization context
+        if (response.status === 400 && errorMessage.toLowerCase().includes("organization")) {
+          errorMessage = "Please select an organization to continue. Use the organization switcher in the sidebar.";
         }
 
         const error: ApiError = {
           message: errorMessage,
           status: response.status,
+          code: errorCode,
         };
         throw error;
       }
@@ -76,7 +110,7 @@ export function useApiClient() {
 
       return response.json();
     },
-    [getToken]
+    [getToken, organization]
   );
 
   /**
@@ -141,6 +175,11 @@ export function useApiClient() {
     [apiFetch]
   );
 
+  /**
+   * Check if user has an organization selected
+   */
+  const hasOrganization = !!organization;
+
   return {
     apiFetch,
     get,
@@ -150,5 +189,8 @@ export function useApiClient() {
     del,
     isLoaded,
     isSignedIn,
+    hasOrganization,
+    organizationId: organization?.id,
+    organizationName: organization?.name,
   };
 }

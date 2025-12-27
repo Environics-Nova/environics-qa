@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { ArrowLeft, Edit, Plus } from "lucide-react";
+import { ArrowLeft, Edit, Plus, Loader2, AlertCircle, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -11,55 +11,191 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { sampleQuestionnaires } from "@/data/sampleData";
-import { Questionnaire, Question } from "@/types";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Questionnaire, Question, DocumentType, ApiResponse, CreateQuestionRequest, UpdateQuestionRequest } from "@/types";
 import { EditQuestionnaireDialog } from "@/components/EditQuestionnaireDialog";
 import { EditQuestionDialog } from "@/components/EditQuestionDialog";
+import { useApiClient, ApiError } from "@/hooks/use-api-client";
+import { useToast } from "@/hooks/use-toast";
 
 const QuestionnaireDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const [questionnaire, setQuestionnaire] = useState<Questionnaire | undefined>(
-    sampleQuestionnaires.find(q => q.questionnaire_id === id)
-  );
+  const { get, put, post, del, isLoaded, hasOrganization } = useApiClient();
+  const { toast } = useToast();
+  
+  const [questionnaire, setQuestionnaire] = useState<Questionnaire | null>(null);
+  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [editQuestionnaireOpen, setEditQuestionnaireOpen] = useState(false);
   const [editQuestionOpen, setEditQuestionOpen] = useState(false);
   const [selectedQuestion, setSelectedQuestion] = useState<Question | null>(null);
   const [addQuestionOpen, setAddQuestionOpen] = useState(false);
 
-  if (!questionnaire) {
-    return (
-      <div className="p-6">
-        <div className="max-w-7xl mx-auto">
-          <p className="text-muted-foreground">Questionnaire not found</p>
-        </div>
-      </div>
-    );
-  }
+  // Fetch questionnaire and document types from API
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isLoaded || !id) return;
+      
+      if (!hasOrganization) {
+        setLoading(false);
+        setError("Please select an organization to view questionnaire details.");
+        return;
+      }
 
-  const handleEditQuestionnaire = (updatedQuestionnaire: Questionnaire) => {
-    setQuestionnaire(updatedQuestionnaire);
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch questionnaire with questions
+        const questionnaireResponse = await get<ApiResponse<Questionnaire>>(`/api/v1/questionnaires/${id}`);
+        if (questionnaireResponse.data) {
+          setQuestionnaire(questionnaireResponse.data);
+        }
+
+        // Fetch document types for question editing
+        const docTypesResponse = await get<ApiResponse<DocumentType[]>>("/api/v1/document-types");
+        setDocumentTypes(docTypesResponse.data || []);
+      } catch (err) {
+        const apiError = err as ApiError;
+        if (apiError.status === 404) {
+          setError("Questionnaire not found");
+        } else {
+          setError(apiError.message || "Failed to load questionnaire");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [get, id, isLoaded, hasOrganization]);
+
+  const handleEditQuestionnaire = async (updatedQuestionnaire: Questionnaire) => {
+    try {
+      const response = await put<ApiResponse<Questionnaire>>(`/api/v1/questionnaires/${id}`, {
+        name: updatedQuestionnaire.name,
+        description: updatedQuestionnaire.description,
+        event_type: updatedQuestionnaire.event_type,
+      });
+      if (response.data) {
+        setQuestionnaire(prev => prev ? { ...prev, ...response.data } : response.data!);
+      }
+      toast({
+        title: "Success",
+        description: "Questionnaire updated successfully.",
+      });
+    } catch (err) {
+      const apiError = err as ApiError;
+      toast({
+        title: "Error",
+        description: apiError.message || "Failed to update questionnaire",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleEditQuestion = (updatedQuestion: Question) => {
+  const handleEditQuestion = async (updatedQuestion: Question) => {
     if (!questionnaire) return;
     
-    const updatedQuestions = questionnaire.questions.map(q => 
-      q.question_id === updatedQuestion.question_id ? updatedQuestion : q
-    );
-    
-    setQuestionnaire({
-      ...questionnaire,
-      questions: updatedQuestions
-    });
+    try {
+      const updateData: UpdateQuestionRequest = {
+        document_1_id: updatedQuestion.document_1_id,
+        property_1: updatedQuestion.property_1,
+        relation: updatedQuestion.relation,
+        document_2_id: updatedQuestion.document_2_id,
+        property_2: updatedQuestion.property_2,
+        comparison_value: updatedQuestion.comparison_value,
+        system_value: updatedQuestion.system_value,
+      };
+
+      const response = await put<ApiResponse<Question>>(`/api/v1/questions/${updatedQuestion.id}`, updateData);
+      
+      if (response.data) {
+        const updatedQuestions = (questionnaire.questions || []).map(q => 
+          q.id === updatedQuestion.id ? response.data! : q
+        );
+        
+        setQuestionnaire({
+          ...questionnaire,
+          questions: updatedQuestions
+        });
+      }
+      
+      toast({
+        title: "Success",
+        description: "Question updated successfully.",
+      });
+    } catch (err) {
+      const apiError = err as ApiError;
+      toast({
+        title: "Error",
+        description: apiError.message || "Failed to update question",
+        variant: "destructive",
+      });
+    }
   };
 
-  const handleAddQuestion = (newQuestion: Question) => {
+  const handleAddQuestion = async (newQuestion: Question) => {
     if (!questionnaire) return;
     
-    setQuestionnaire({
-      ...questionnaire,
-      questions: [...questionnaire.questions, newQuestion]
-    });
+    try {
+      const createData: CreateQuestionRequest = {
+        document_1_id: newQuestion.document_1_id,
+        property_1: newQuestion.property_1,
+        relation: newQuestion.relation,
+        document_2_id: newQuestion.document_2_id,
+        property_2: newQuestion.property_2,
+        comparison_value: newQuestion.comparison_value,
+        system_value: newQuestion.system_value,
+      };
+
+      const response = await post<ApiResponse<Question>>(`/api/v1/questionnaires/${id}/questions`, createData);
+      
+      if (response.data) {
+        setQuestionnaire({
+          ...questionnaire,
+          questions: [...(questionnaire.questions || []), response.data]
+        });
+      }
+      
+      toast({
+        title: "Success",
+        description: "Question added successfully.",
+      });
+    } catch (err) {
+      const apiError = err as ApiError;
+      toast({
+        title: "Error",
+        description: apiError.message || "Failed to add question",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDeleteQuestion = async (questionId: string) => {
+    if (!questionnaire) return;
+    
+    try {
+      await del(`/api/v1/questions/${questionId}`);
+      
+      setQuestionnaire({
+        ...questionnaire,
+        questions: (questionnaire.questions || []).filter(q => q.id !== questionId)
+      });
+      
+      toast({
+        title: "Success",
+        description: "Question deleted successfully.",
+      });
+    } catch (err) {
+      const apiError = err as ApiError;
+      toast({
+        title: "Error",
+        description: apiError.message || "Failed to delete question",
+        variant: "destructive",
+      });
+    }
   };
 
   const openEditQuestion = (question: Question) => {
@@ -71,6 +207,42 @@ const QuestionnaireDetail = () => {
     setSelectedQuestion(null);
     setAddQuestionOpen(true);
   };
+
+  // Get document type name by ID
+  const getDocumentTypeName = (docTypeId: string): string => {
+    const docType = documentTypes.find(dt => dt.id === docTypeId);
+    return docType?.name || "Unknown";
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="p-6 flex items-center justify-center min-h-[400px]">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Error state
+  if (error || !questionnaire) {
+    return (
+      <div className="p-6">
+        <div className="max-w-7xl mx-auto">
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>{error || "Questionnaire not found"}</AlertDescription>
+          </Alert>
+          <Link to="/questionnaires" className="inline-flex items-center text-muted-foreground hover:text-foreground mt-4">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back to Questionnaires
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
+  const questions = questionnaire.questions || [];
 
   return (
     <div className="p-6">
@@ -114,7 +286,7 @@ const QuestionnaireDetail = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Total Questions</p>
-                  <p className="text-foreground">{questionnaire.questions.length}</p>
+                  <p className="text-foreground">{questions.length}</p>
                 </div>
               </div>
               <div>
@@ -148,11 +320,11 @@ const QuestionnaireDetail = () => {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {questionnaire.questions.map((question) => (
-                    <TableRow key={question.question_id}>
+                  {questions.map((question) => (
+                    <TableRow key={question.id}>
                       <TableCell>
                         <div className="space-y-1">
-                          <p className="font-medium">{question.document_1.name}</p>
+                          <p className="font-medium">{question.document_1?.name || getDocumentTypeName(question.document_1_id)}</p>
                           <p className="text-sm text-muted-foreground">{question.property_1}</p>
                         </div>
                       </TableCell>
@@ -163,9 +335,9 @@ const QuestionnaireDetail = () => {
                       </TableCell>
                       <TableCell>
                         <div className="space-y-1">
-                          {question.document_2 ? (
+                          {question.document_2_id ? (
                             <>
-                              <p className="font-medium">{question.document_2.name}</p>
+                              <p className="font-medium">{question.document_2?.name || getDocumentTypeName(question.document_2_id)}</p>
                               <p className="text-sm text-muted-foreground">{question.property_2}</p>
                             </>
                           ) : (
@@ -174,18 +346,37 @@ const QuestionnaireDetail = () => {
                         </div>
                       </TableCell>
                       <TableCell>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => openEditQuestion(question)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
+                        <div className="flex gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => openEditQuestion(question)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteQuestion(question.id)}
+                          >
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
               </Table>
+
+              {questions.length === 0 && (
+                <div className="text-center py-8">
+                  <p className="text-muted-foreground">No questions configured yet.</p>
+                  <Button onClick={openAddQuestion} className="mt-4">
+                    <Plus className="h-4 w-4 mr-2" />
+                    Add First Question
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -200,6 +391,7 @@ const QuestionnaireDetail = () => {
         <EditQuestionDialog
           question={selectedQuestion}
           questionnaire={questionnaire}
+          documentTypes={documentTypes}
           open={editQuestionOpen || addQuestionOpen}
           onOpenChange={(open) => {
             setEditQuestionOpen(open);

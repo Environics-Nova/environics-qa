@@ -10,8 +10,10 @@ interface ProjectCardProps {
 }
 
 export const ProjectCard = ({ project, onView }: ProjectCardProps) => {
+  const projectId = project.id;
+  
   return (
-    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onView(project.project_id)}>
+    <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => onView(projectId)}>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-start">
           <CardTitle className="text-lg text-foreground">{project.name}</CardTitle>
@@ -37,7 +39,7 @@ export const ProjectCard = ({ project, onView }: ProjectCardProps) => {
             size="sm" 
             onClick={(e) => {
               e.stopPropagation();
-              onView(project.project_id);
+              onView(projectId);
             }}
             className="w-full"
           >

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,21 +18,63 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { sampleQuestionnaires, sampleEvents } from "@/data/sampleData";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { useApiClient, ApiError } from "@/hooks/use-api-client";
+import { QAQCProcess, Questionnaire, Event, ApiResponse, CreateQAQCProcessRequest } from "@/types";
 
 interface NewQAQCProcessDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onProcessCreated?: (process: QAQCProcess) => void;
 }
 
-const NewQAQCProcessDialog = ({ open, onOpenChange }: NewQAQCProcessDialogProps) => {
+const NewQAQCProcessDialog = ({ open, onOpenChange, onProcessCreated }: NewQAQCProcessDialogProps) => {
+  const { get, post, hasOrganization } = useApiClient();
+  
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [selectedQuestionnaireId, setSelectedQuestionnaireId] = useState("");
   const [selectedEventId, setSelectedEventId] = useState("");
+  const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // Fetch questionnaires and events when dialog opens
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!open || !hasOrganization) return;
+      
+      setLoading(true);
+      try {
+        // Fetch questionnaires
+        const questionnairesResponse = await get<ApiResponse<Questionnaire[]>>("/api/v1/questionnaires");
+        setQuestionnaires(questionnairesResponse.data || []);
+
+        // Fetch all events (we'll filter them based on questionnaire selection)
+        // Note: In a real app, you might want to fetch events differently
+        const projectsResponse = await get<ApiResponse<{ id: string }[]>>("/api/v1/projects");
+        const allEvents: Event[] = [];
+        
+        for (const project of (projectsResponse.data || [])) {
+          const eventsResponse = await get<ApiResponse<Event[]>>(`/api/v1/projects/${project.id}/events`);
+          allEvents.push(...(eventsResponse.data || []));
+        }
+        
+        setEvents(allEvents);
+      } catch (err) {
+        const apiError = err as ApiError;
+        toast.error(apiError.message || "Failed to load data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [open, get, hasOrganization]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!name || !selectedQuestionnaireId || !selectedEventId) {
@@ -40,23 +82,34 @@ const NewQAQCProcessDialog = ({ open, onOpenChange }: NewQAQCProcessDialogProps)
       return;
     }
 
-    const selectedQuestionnaire = sampleQuestionnaires.find(q => q.questionnaire_id === selectedQuestionnaireId);
-    const selectedEvent = sampleEvents.find(e => e.event_id === selectedEventId);
+    setSubmitting(true);
+    try {
+      const requestData: CreateQAQCProcessRequest = {
+        name,
+        description: description || undefined,
+        questionnaire_id: selectedQuestionnaireId,
+        event_id: selectedEventId,
+      };
 
-    if (!selectedQuestionnaire || !selectedEvent) {
-      toast.error("Invalid questionnaire or event selection");
-      return;
+      const response = await post<ApiResponse<QAQCProcess>>("/api/v1/qaqc-processes", requestData);
+      
+      if (response.data) {
+        toast.success("QA/QC Process initiated successfully");
+        onProcessCreated?.(response.data);
+        
+        // Reset form
+        setName("");
+        setDescription("");
+        setSelectedQuestionnaireId("");
+        setSelectedEventId("");
+        onOpenChange(false);
+      }
+    } catch (err) {
+      const apiError = err as ApiError;
+      toast.error(apiError.message || "Failed to create QA/QC process");
+    } finally {
+      setSubmitting(false);
     }
-
-    // Here you would typically create the new process
-    toast.success("QA/QC Process initiated successfully");
-    
-    // Reset form
-    setName("");
-    setDescription("");
-    setSelectedQuestionnaireId("");
-    setSelectedEventId("");
-    onOpenChange(false);
   };
 
   const handleCancel = () => {
@@ -67,10 +120,10 @@ const NewQAQCProcessDialog = ({ open, onOpenChange }: NewQAQCProcessDialogProps)
     onOpenChange(false);
   };
 
-  const selectedQuestionnaire = sampleQuestionnaires.find(q => q.questionnaire_id === selectedQuestionnaireId);
+  const selectedQuestionnaire = questionnaires.find(q => q.id === selectedQuestionnaireId);
   const filteredEvents = selectedQuestionnaire?.event_type 
-    ? sampleEvents.filter(event => event.event_types.includes(selectedQuestionnaire.event_type!))
-    : sampleEvents;
+    ? events.filter(event => event.event_types.includes(selectedQuestionnaire.event_type!))
+    : events;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -83,93 +136,105 @@ const NewQAQCProcessDialog = ({ open, onOpenChange }: NewQAQCProcessDialogProps)
             </DialogDescription>
           </DialogHeader>
           
-          <div className="grid gap-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Process Name *</Label>
-              <Input
-                id="name"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="Enter process name"
-                required
-              />
+          {loading ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="description">Description</Label>
-              <Textarea
-                id="description"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Enter process description (optional)"
-                rows={3}
-              />
-            </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="questionnaire">Questionnaire *</Label>
-              <Select value={selectedQuestionnaireId} onValueChange={setSelectedQuestionnaireId} required>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select a questionnaire" />
-                </SelectTrigger>
-                <SelectContent>
-                  {sampleQuestionnaires.map((questionnaire) => (
-                    <SelectItem key={questionnaire.questionnaire_id} value={questionnaire.questionnaire_id}>
-                      <div className="flex flex-col">
-                        <span>{questionnaire.name}</span>
-                        {questionnaire.event_type && (
+          ) : (
+            <div className="grid gap-4 py-4">
+              <div className="space-y-2">
+                <Label htmlFor="name">Process Name *</Label>
+                <Input
+                  id="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Enter process name"
+                  required
+                  disabled={submitting}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="description">Description</Label>
+                <Textarea
+                  id="description"
+                  value={description}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Enter process description (optional)"
+                  rows={3}
+                  disabled={submitting}
+                />
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="questionnaire">Questionnaire *</Label>
+                <Select 
+                  value={selectedQuestionnaireId} 
+                  onValueChange={setSelectedQuestionnaireId}
+                  disabled={submitting}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select a questionnaire" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {questionnaires.map((questionnaire) => (
+                      <SelectItem key={questionnaire.id} value={questionnaire.id}>
+                        <div className="flex flex-col">
+                          <span>{questionnaire.name}</span>
+                          {questionnaire.event_type && (
+                            <span className="text-xs text-muted-foreground">
+                              Event Type: {questionnaire.event_type}
+                            </span>
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="space-y-2">
+                <Label htmlFor="event">Event *</Label>
+                <Select 
+                  value={selectedEventId} 
+                  onValueChange={setSelectedEventId}
+                  disabled={!selectedQuestionnaireId || submitting}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder={
+                      selectedQuestionnaireId 
+                        ? "Select an event" 
+                        : "Select a questionnaire first"
+                    } />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {filteredEvents.map((event) => (
+                      <SelectItem key={event.id} value={event.id}>
+                        <div className="flex flex-col">
+                          <span>{event.name}</span>
                           <span className="text-xs text-muted-foreground">
-                            Event Type: {questionnaire.event_type}
+                            {event.project?.name || "Project"} • Types: {event.event_types.join(", ")}
                           </span>
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedQuestionnaire?.event_type && (
+                  <p className="text-xs text-muted-foreground">
+                    Showing events with type: {selectedQuestionnaire.event_type}
+                  </p>
+                )}
+              </div>
             </div>
-            
-            <div className="space-y-2">
-              <Label htmlFor="event">Event *</Label>
-              <Select 
-                value={selectedEventId} 
-                onValueChange={setSelectedEventId} 
-                required
-                disabled={!selectedQuestionnaireId}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder={
-                    selectedQuestionnaireId 
-                      ? "Select an event" 
-                      : "Select a questionnaire first"
-                  } />
-                </SelectTrigger>
-                <SelectContent>
-                  {filteredEvents.map((event) => (
-                    <SelectItem key={event.event_id} value={event.event_id}>
-                      <div className="flex flex-col">
-                        <span>{event.name}</span>
-                        <span className="text-xs text-muted-foreground">
-                          {event.project.name} • Types: {event.event_types.join(", ")}
-                        </span>
-                      </div>
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              {selectedQuestionnaire?.event_type && (
-                <p className="text-xs text-muted-foreground">
-                  Showing events with type: {selectedQuestionnaire.event_type}
-                </p>
-              )}
-            </div>
-          </div>
+          )}
           
           <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleCancel}>
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={submitting}>
               Cancel
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={loading || submitting}>
+              {submitting && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
               Initiate Process
             </Button>
           </DialogFooter>

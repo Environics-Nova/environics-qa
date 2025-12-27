@@ -1,32 +1,123 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card";
 import { Button } from "../components/ui/button";
 import { StatusBadge } from "../components/StatusBadge";
 import { EditEventDialog } from "../components/EditEventDialog";
-import { sampleEvents, getEventDocuments, getRequiredDocuments } from "../data/sampleData";
-import { ArrowLeft, Calendar, Clock, Upload, Eye, FileText } from "lucide-react";
-import { Document, DocumentType, Event } from "../types";
+import { ArrowLeft, Calendar, Clock, Upload, Eye, FileText, Loader2, AlertCircle } from "lucide-react";
+import { Document, DocumentType, Event, ApiResponse } from "../types";
+import { useApiClient, ApiError } from "../hooks/use-api-client";
 
 const EventDetail = () => {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { get, put, hasOrganization, isLoaded } = useApiClient();
   
-  const [currentEvent, setCurrentEvent] = useState<Event | undefined>(
-    sampleEvents.find(e => e.event_id === eventId)
-  );
-  const documents = eventId ? getEventDocuments(eventId) : [];
-  const requiredDocuments = currentEvent ? getRequiredDocuments(currentEvent.event_types) : [];
+  const [currentEvent, setCurrentEvent] = useState<Event | null>(null);
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [documentTypes, setDocumentTypes] = useState<DocumentType[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleEventUpdate = (updatedEvent: Event) => {
-    setCurrentEvent(updatedEvent);
+  // Fetch event and documents from API
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!isLoaded || !eventId) return;
+      
+      if (!hasOrganization) {
+        setLoading(false);
+        setError("Please select an organization to view event details.");
+        return;
+      }
+
+      setLoading(true);
+      setError(null);
+
+      try {
+        // Fetch event details
+        const eventResponse = await get<ApiResponse<Event>>(`/api/v1/events/${eventId}`);
+        if (eventResponse.data) {
+          setCurrentEvent(eventResponse.data);
+        }
+
+        // Fetch documents for this event
+        const docsResponse = await get<ApiResponse<Document[]>>(`/api/v1/events/${eventId}/documents`);
+        setDocuments(docsResponse.data || []);
+
+        // Fetch document types
+        const typesResponse = await get<ApiResponse<DocumentType[]>>(`/api/v1/document-types`);
+        setDocumentTypes(typesResponse.data || []);
+      } catch (err) {
+        const apiError = err as ApiError;
+        if (apiError.status === 404) {
+          setError("Event not found");
+        } else {
+          setError(apiError.message || "Failed to load event");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [get, eventId, hasOrganization, isLoaded]);
+
+  const handleEventUpdate = async (updatedEvent: Event) => {
+    try {
+      const response = await put<ApiResponse<Event>>(`/api/v1/events/${eventId}`, {
+        name: updatedEvent.name,
+        start_datetime: updatedEvent.start_datetime,
+        end_datetime: updatedEvent.end_datetime,
+        event_types: updatedEvent.event_types,
+      });
+      if (response.data) {
+        setCurrentEvent(response.data);
+      }
+    } catch (err) {
+      const apiError = err as ApiError;
+      setError(apiError.message || "Failed to update event");
+    }
   };
 
-  if (!currentEvent) {
+  // Get required document types based on event types
+  const getRequiredDocumentTypes = (): DocumentType[] => {
+    if (!currentEvent) return [];
+    
+    // Map event types to document type names (this is a simplified mapping)
+    const eventTypeToDocType: Record<string, string[]> = {
+      "Drilling": ["Drilling Log"],
+      "GWMS": ["Groundwater Monitoring"],
+      "SV_Sampling": ["Soil Sample Analysis"],
+      "Survey": ["Site Survey Report"],
+      "PVV": [],
+      "Excavation": [],
+    };
+
+    const requiredNames = new Set<string>();
+    currentEvent.event_types.forEach(type => {
+      const docTypes = eventTypeToDocType[type] || [];
+      docTypes.forEach(name => requiredNames.add(name));
+    });
+
+    return documentTypes.filter(dt => requiredNames.has(dt.name));
+  };
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  // Error or not found state
+  if (error || !currentEvent) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-foreground mb-4">Event Not Found</h1>
+          <AlertCircle className="w-12 h-12 text-destructive mx-auto mb-4" />
+          <h1 className="text-2xl font-bold text-foreground mb-4">{error || "Event Not Found"}</h1>
           <Button onClick={() => navigate("/")} variant="outline">
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back to Dashboard
@@ -36,19 +127,21 @@ const EventDetail = () => {
     );
   }
 
+  const requiredDocuments = getRequiredDocumentTypes();
+
   const getDocumentForType = (docType: DocumentType): Document | null => {
-    return documents.find(doc => doc.type.document_type_id === docType.document_type_id) || null;
+    return documents.find(doc => doc.document_type_id === docType.id) || null;
   };
 
   const handleDocumentAction = (document: Document | null, docType: DocumentType) => {
     if (!document) {
-      // Handle upload
+      // Handle upload - would need file upload implementation
       console.log("Upload document for type:", docType.name);
       return;
     }
 
     if (document.status === "Parsed") {
-      navigate(`/document/${document.document_id}`);
+      navigate(`/document/${document.id}`);
     }
   };
 
@@ -87,6 +180,8 @@ const EventDetail = () => {
     }
   };
 
+  const projectId = currentEvent.project_id || currentEvent.project?.id;
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -94,13 +189,13 @@ const EventDetail = () => {
         <div className="container mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate(`/project/${currentEvent.project.project_id}`)} className="gap-2">
+              <Button variant="ghost" onClick={() => navigate(projectId ? `/project/${projectId}` : "/")} className="gap-2">
                 <ArrowLeft className="w-4 h-4" />
                 Back to Project
               </Button>
               <div>
                 <h1 className="text-3xl font-bold text-foreground">{currentEvent.name}</h1>
-                <p className="text-muted-foreground mt-1">{currentEvent.project.name}</p>
+                <p className="text-muted-foreground mt-1">{currentEvent.project?.name || "Project"}</p>
               </div>
             </div>
             <EditEventDialog 
@@ -169,7 +264,7 @@ const EventDetail = () => {
                 const document = getDocumentForType(docType);
                 return (
                   <div 
-                    key={docType.document_type_id}
+                    key={docType.id}
                     className="border border-border rounded-lg p-4"
                   >
                     <div className="flex justify-between items-start mb-3">
