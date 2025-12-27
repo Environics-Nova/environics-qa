@@ -42,8 +42,9 @@ const ProjectDetail = () => {
         }
 
         // Fetch events for this project
-        const eventsResponse = await get<ApiResponse<Event[]>>(`/api/v1/projects/${projectId}/events`);
-        setEvents(eventsResponse.data || []);
+        // API returns { data: { events: [...] } }
+        const eventsResponse = await get<ApiResponse<{ events: Event[] }>>(`/api/v1/projects/${projectId}/events`);
+        setEvents(eventsResponse.data?.events || []);
       } catch (err) {
         const apiError = err as ApiError;
         if (apiError.status === 404) {
