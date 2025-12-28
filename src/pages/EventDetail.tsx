@@ -46,7 +46,7 @@ const EventDetail = () => {
 
         // Fetch document types
         const typesResponse = await get<ApiResponse<DocumentType[]>>(`/api/v1/document-types`);
-        setDocumentTypes(typesResponse.data || []);
+        setDocumentTypes(Array.isArray(typesResponse.data) ? typesResponse.data : []);
       } catch (err) {
         const apiError = err as ApiError;
         if (apiError.status === 404) {
@@ -81,7 +81,7 @@ const EventDetail = () => {
 
   // Get required document types based on event types
   const getRequiredDocumentTypes = (): DocumentType[] => {
-    if (!currentEvent) return [];
+    if (!currentEvent || !Array.isArray(documentTypes)) return [];
     
     // Map event types to document type names (this is a simplified mapping)
     const eventTypeToDocType: Record<string, string[]> = {

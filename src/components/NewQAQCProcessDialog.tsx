@@ -50,7 +50,7 @@ const NewQAQCProcessDialog = ({ open, onOpenChange, onProcessCreated }: NewQAQCP
       try {
         // Fetch questionnaires
         const questionnairesResponse = await get<ApiResponse<Questionnaire[]>>("/api/v1/questionnaires");
-        setQuestionnaires(questionnairesResponse.data || []);
+        setQuestionnaires(Array.isArray(questionnairesResponse.data) ? questionnairesResponse.data : []);
 
         // Fetch all events (we'll filter them based on questionnaire selection)
         // Note: In a real app, you might want to fetch events differently
@@ -120,10 +120,10 @@ const NewQAQCProcessDialog = ({ open, onOpenChange, onProcessCreated }: NewQAQCP
     onOpenChange(false);
   };
 
-  const selectedQuestionnaire = questionnaires.find(q => q.id === selectedQuestionnaireId);
+  const selectedQuestionnaire = Array.isArray(questionnaires) ? questionnaires.find(q => q.id === selectedQuestionnaireId) : undefined;
   const filteredEvents = selectedQuestionnaire?.event_type 
-    ? events.filter(event => event.event_types.includes(selectedQuestionnaire.event_type!))
-    : events;
+    ? (Array.isArray(events) ? events.filter(event => event.event_types.includes(selectedQuestionnaire.event_type!)) : [])
+    : (Array.isArray(events) ? events : []);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
