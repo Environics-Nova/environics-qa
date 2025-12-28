@@ -29,7 +29,7 @@ const Questionnaires = () => {
 
       try {
         const response = await get<ApiResponse<Questionnaire[]>>("/api/v1/questionnaires");
-        setQuestionnaires(response.data || []);
+        setQuestionnaires(Array.isArray(response.data) ? response.data : []);
       } catch (err) {
         const apiError = err as ApiError;
         setError(apiError.message || "Failed to load questionnaires");
