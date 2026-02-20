@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "../components/ui/card"
 import { Button } from "../components/ui/button";
 import { StatusBadge } from "../components/StatusBadge";
 import { EditEventDialog } from "../components/EditEventDialog";
-import { ArrowLeft, Calendar, Clock, Upload, Eye, FileText, Loader2, AlertCircle } from "lucide-react";
+import UploadDocumentDialog from "../components/UploadDocumentDialog";
+import { ArrowLeft, Calendar, Clock, Eye, FileText, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Document, DocumentType, Event, ApiResponse } from "../types";
 import { useApiClient, ApiError } from "../hooks/use-api-client";
 
@@ -41,12 +42,14 @@ const EventDetail = () => {
         }
 
         // Fetch documents for this event
-        const docsResponse = await get<ApiResponse<Document[]>>(`/api/v1/events/${eventId}/documents`);
-        setDocuments(docsResponse.data || []);
+        const docsResponse = await get<ApiResponse<Record<string, unknown>>>(`/api/v1/events/${eventId}/documents`);
+        const docList = docsResponse.data?.documents || docsResponse.data;
+        setDocuments(Array.isArray(docList) ? docList : []);
 
         // Fetch document types
-        const typesResponse = await get<ApiResponse<DocumentType[]>>(`/api/v1/document-types`);
-        setDocumentTypes(Array.isArray(typesResponse.data) ? typesResponse.data : []);
+        const typesResponse = await get<ApiResponse<Record<string, unknown>>>(`/api/v1/document-types`);
+        const dtList = typesResponse.data?.document_types || typesResponse.data;
+        setDocumentTypes(Array.isArray(dtList) ? dtList : []);
       } catch (err) {
         const apiError = err as ApiError;
         if (apiError.status === 404) {
@@ -133,50 +136,45 @@ const EventDetail = () => {
     return documents.find(doc => doc.document_type_id === docType.id) || null;
   };
 
-  const handleDocumentAction = (document: Document | null, docType: DocumentType) => {
-    if (!document) {
-      // Handle upload - would need file upload implementation
-      console.log("Upload document for type:", docType.name);
-      return;
-    }
+  const handleDocumentUploaded = (doc: Document) => {
+    // Add or replace document in the list
+    setDocuments(prev => {
+      const idx = prev.findIndex(d => d.document_type_id === doc.document_type_id);
+      if (idx >= 0) {
+        const next = [...prev];
+        next[idx] = doc;
+        return next;
+      }
+      return [...prev, doc];
+    });
+  };
 
-    if (document.status === "Parsed") {
+  const handleDocumentAction = (document: Document | null) => {
+    if (document?.status === "Parsed") {
       navigate(`/document/${document.id}`);
     }
   };
 
-  const getActionButton = (document: Document | null, docType: DocumentType) => {
-    if (!document) {
-      return (
-        <Button size="sm" onClick={() => handleDocumentAction(document, docType)} className="gap-2">
-          <Upload className="w-4 h-4" />
-          Upload
-        </Button>
-      );
-    }
+  const getActionButton = (document: Document | null) => {
+    if (!document) return null;
 
     switch (document.status) {
       case "Processing":
         return (
           <Button size="sm" disabled variant="outline" className="gap-2">
             <Clock className="w-4 h-4 animate-spin" />
-            Processing
+            Extracting…
           </Button>
         );
       case "Parsed":
         return (
-          <Button size="sm" onClick={() => handleDocumentAction(document, docType)} variant="outline" className="gap-2">
+          <Button size="sm" onClick={() => handleDocumentAction(document)} variant="outline" className="gap-2">
             <Eye className="w-4 h-4" />
             View
           </Button>
         );
       default:
-        return (
-          <Button size="sm" onClick={() => handleDocumentAction(document, docType)} className="gap-2">
-            <Upload className="w-4 h-4" />
-            Upload
-          </Button>
-        );
+        return null;
     }
   };
 
@@ -198,10 +196,17 @@ const EventDetail = () => {
                 <p className="text-muted-foreground mt-1">{currentEvent.project?.name || "Project"}</p>
               </div>
             </div>
-            <EditEventDialog 
-              event={currentEvent} 
-              onSave={handleEventUpdate}
-            />
+            <div className="flex items-center gap-3">
+              <UploadDocumentDialog
+                eventId={currentEvent.id}
+                documentTypes={documentTypes}
+                onUploaded={handleDocumentUploaded}
+              />
+              <EditEventDialog
+                event={currentEvent}
+                onSave={handleEventUpdate}
+              />
+            </div>
           </div>
         </div>
       </div>
@@ -281,7 +286,12 @@ const EventDetail = () => {
                       </div>
                       <div className="flex items-center gap-3">
                         {document && <StatusBadge status={document.status} />}
-                        {getActionButton(document, docType)}
+                        {document?.extraction_status && (
+                          <span className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground border">
+                            AI: {document.extraction_status}
+                          </span>
+                        )}
+                        {getActionButton(document)}
                       </div>
                     </div>
                     
@@ -291,9 +301,10 @@ const EventDetail = () => {
                         {docType.properties.map((prop, index) => (
                           <span 
                             key={index}
-                            className="inline-flex items-center px-2 py-1 rounded text-xs bg-muted text-muted-foreground"
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs bg-muted text-muted-foreground border border-border/50"
                           >
-                            {prop}
+                            <span className="font-medium">{prop.name}</span>
+                            <span className="opacity-50 text-[10px] uppercase">{prop.type}</span>
                           </span>
                         ))}
                       </div>

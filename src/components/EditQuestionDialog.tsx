@@ -28,7 +28,57 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Question, Questionnaire, RelationType, DocumentType } from "@/types";
+import { Question, Questionnaire, RelationType, DocumentType, PropertyDef } from "@/types";
+
+// Reusable property input: dropdown of known props + free-text JSON path
+function PropertyInput({
+  value,
+  onChange,
+  properties,
+  placeholder = "Select or type JSON path",
+  disabled,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  properties: PropertyDef[];
+  placeholder?: string;
+  disabled?: boolean;
+}) {
+  const propertyNames = properties.map((p) => p.name);
+  const isJsonPath = value && !propertyNames.includes(value);
+  return (
+    <div className="space-y-1">
+      {properties.length > 0 && (
+        <Select onValueChange={onChange} value={propertyNames.includes(value) ? value : ""} disabled={disabled}>
+          <SelectTrigger>
+            <SelectValue placeholder="Pick from list…" />
+          </SelectTrigger>
+          <SelectContent>
+            {properties.map((p) => (
+              <SelectItem key={p.name} value={p.name}>{p.name} ({p.type})</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      )}
+      <Input
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={placeholder}
+        disabled={disabled}
+      />
+      {isJsonPath && (
+        <p className="text-xs text-muted-foreground">
+          💡 JSON Path: dot notation supported (e.g. <code>metadata.drilling_depth</code>)
+        </p>
+      )}
+      {!value && (
+        <p className="text-xs text-muted-foreground">
+          Type a property name or dot path (e.g. <code>samples[0].depth_m</code>)
+        </p>
+      )}
+    </div>
+  );
+}
 
 const formSchema = z.object({
   document1Id: z.string().min(1, "Document 1 is required"),
@@ -106,6 +156,10 @@ export function EditQuestionDialog({
   const selectedDocument1 = documentTypes.find(doc => doc.id === document1Id);
   const selectedDocument2 = documentTypes.find(doc => doc.id === document2Id);
 
+  // Normalize properties: API may return null for empty arrays
+  const props1 = Array.isArray(selectedDocument1?.properties) ? selectedDocument1.properties : [];
+  const props2 = Array.isArray(selectedDocument2?.properties) ? selectedDocument2.properties : [];
+
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsLoading(true);
 
@@ -179,20 +233,14 @@ export function EditQuestionDialog({
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Property 1</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select property" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {selectedDocument1?.properties.map((prop) => (
-                          <SelectItem key={prop} value={prop}>
-                            {prop}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+                    <FormControl>
+                      <PropertyInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        properties={props1}
+                        placeholder="e.g. depth_m or metadata.depth_m"
+                      />
+                    </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -284,20 +332,14 @@ export function EditQuestionDialog({
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Property 2</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select property" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {selectedDocument2?.properties.map((prop) => (
-                            <SelectItem key={prop} value={prop}>
-                              {prop}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                      <FormControl>
+                        <PropertyInput
+                          value={field.value ?? ""}
+                          onChange={field.onChange}
+                          properties={props2}
+                          placeholder="e.g. depth_m or metadata.depth_m"
+                        />
+                      </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}

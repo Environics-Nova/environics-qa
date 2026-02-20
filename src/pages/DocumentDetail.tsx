@@ -287,24 +287,26 @@ const DocumentDetail = () => {
           <CardContent>
             <div className="space-y-4">
               {properties.map((property) => (
-                <div key={property} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 border border-border rounded-lg">
+                <div key={property.name} className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center p-4 border border-border rounded-lg">
                   <div>
-                    <Label className="font-medium">{property}</Label>
+                    <Label className="font-medium">{property.name}</Label>
                     <p className="text-xs text-muted-foreground mt-1">
-                      Required property for {documentType?.name || "this document"}
+                      Required {property.type} for {documentType?.name || "this document"}
                     </p>
                   </div>
                   <div className="md:col-span-2">
                     {isEditing ? (
                       <Input
-                        value={editedValues[property] || ""}
-                        onChange={(e) => handlePropertyChange(property, e.target.value)}
-                        placeholder={`Enter ${property}`}
+                        value={editedValues[property.name]?.toString() || ""}
+                        onChange={(e) => handlePropertyChange(property.name, e.target.value)}
+                        placeholder={`Enter ${property.name}`}
                         disabled={saving}
                       />
                     ) : (
                       <div className="p-2 bg-muted rounded-md">
-                        {editedValues[property] || (
+                        {editedValues[property.name] !== undefined && editedValues[property.name] !== null ? (
+                          String(editedValues[property.name])
+                        ) : (
                           <span className="text-muted-foreground italic">No value extracted</span>
                         )}
                       </div>

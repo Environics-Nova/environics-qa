@@ -49,20 +49,30 @@ const NewQAQCProcessDialog = ({ open, onOpenChange, onProcessCreated }: NewQAQCP
       setLoading(true);
       try {
         // Fetch questionnaires
-        const questionnairesResponse = await get<ApiResponse<Questionnaire[]>>("/api/v1/questionnaires");
-        setQuestionnaires(Array.isArray(questionnairesResponse.data) ? questionnairesResponse.data : []);
+        const qResponse = await get<ApiResponse<Record<string, unknown>>>("/api/v1/questionnaires");
+        const qList = qResponse.data?.questionnaires || qResponse.data;
+        setQuestionnaires(Array.isArray(qList) ? qList : []);
 
-        // Fetch all events (we'll filter them based on questionnaire selection)
-        // Note: In a real app, you might want to fetch events differently
-        const projectsResponse = await get<ApiResponse<{ id: string }[]>>("/api/v1/projects");
+        const projectsResponse = await get<ApiResponse<Record<string, unknown>>>("/api/v1/projects");
+        const projectsData = projectsResponse.data?.projects || projectsResponse.data;
+        const projects = Array.isArray(projectsData) ? projectsData : [];
         const allEvents: Event[] = [];
-        
-        for (const project of (projectsResponse.data || [])) {
-          const eventsResponse = await get<ApiResponse<Event[]>>(`/api/v1/projects/${project.id}/events`);
-          allEvents.push(...(eventsResponse.data || []));
+
+        for (const project of projects) {
+          try {
+            const eventsResponse = await get<ApiResponse<Record<string, unknown>>>(`/api/v1/projects/${project.id}/events`);
+            const evts = Array.isArray(eventsResponse.data?.events) ? eventsResponse.data.events : 
+                         (Array.isArray(eventsResponse.data) ? eventsResponse.data : []);
+            if (Array.isArray(evts)) {
+              evts.forEach(evt => allEvents.push(evt as Event));
+            }
+          } catch {
+            // skip projects we can't fetch events for
+          }
         }
-        
+
         setEvents(allEvents);
+
       } catch (err) {
         const apiError = err as ApiError;
         toast.error(apiError.message || "Failed to load data");
@@ -213,7 +223,7 @@ const NewQAQCProcessDialog = ({ open, onOpenChange, onProcessCreated }: NewQAQCP
                         <div className="flex flex-col">
                           <span>{event.name}</span>
                           <span className="text-xs text-muted-foreground">
-                            {event.project?.name || "Project"} • Types: {event.event_types.join(", ")}
+                            {event.project?.name || "Project"} • Types: {(event.event_types || []).join(", ")}
                           </span>
                         </div>
                       </SelectItem>

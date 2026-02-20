@@ -78,11 +78,18 @@ export interface LegacyEvent {
   event_types: EventType[];
 }
 
+export interface PropertyDef {
+  name: string;
+  type: string;
+}
+
 export interface DocumentType {
   id: string;
   name: string;
-  properties: string[];
+  properties: PropertyDef[];
   organization_id?: string;
+  created_at?: string;
+  updated_at?: string;
 }
 
 // Legacy type alias for backward compatibility
@@ -101,6 +108,8 @@ export interface Document {
   file_path?: string;
   properties_values: Record<string, string | number | boolean | null>;
   status: DocumentStatus;
+  extraction_job_id?: string;
+  extraction_status?: string;
   event?: Event;
   document_type?: DocumentType;
   created_at?: string;
@@ -245,6 +254,11 @@ export interface CreateDocumentRequest {
   document_type_id: string;
   file_name: string;
   file_format: FileFormat;
+}
+
+export interface CreateDocumentTypeRequest {
+  name: string;
+  properties: PropertyDef[];
 }
 
 export interface UpdateDocumentRequest {

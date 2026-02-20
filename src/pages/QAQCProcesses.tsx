@@ -53,7 +53,7 @@ const QAQCProcesses = () => {
   };
 
   const handleProcessCreated = (newProcess: QAQCProcess) => {
-    setProcesses(prev => [newProcess, ...prev]);
+    setProcesses(prev => [newProcess].concat(Array.isArray(prev) ? prev : []));
     setIsNewProcessDialogOpen(false);
   };
 

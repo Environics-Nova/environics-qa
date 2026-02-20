@@ -5,22 +5,46 @@ export const documentTypes: DocumentType[] = [
   {
     document_type_id: "dt-1",
     name: "Drilling Log",
-    properties: ["Depth", "Soil_Type", "Moisture_Content", "PID_Reading", "Sample_ID"]
-  },
+    properties: [
+      { name: "Depth", type: "string" },
+      { name: "Soil_Type", type: "string" },
+      { name: "Moisture_Content", type: "string" },
+      { name: "PID_Reading", type: "string" },
+      { name: "Sample_ID", type: "string" }
+    ]
   {
     document_type_id: "dt-2", 
     name: "Groundwater Monitoring",
-    properties: ["Well_ID", "Water_Level", "pH", "Conductivity", "Temperature", "Turbidity"]
+    properties: [
+      { name: "Well_ID", type: "string" },
+      { name: "Water_Level", type: "string" },
+      { name: "pH", type: "string" },
+      { name: "Conductivity", type: "string" },
+      { name: "Temperature", type: "string" },
+      { name: "Turbidity", type: "string" }
+    ]
   },
   {
     document_type_id: "dt-3",
     name: "Soil Sample Analysis",
-    properties: ["Sample_ID", "Depth", "VOC_Concentration", "SVOC_Concentration", "Metals_Concentration"]
+    properties: [
+      { name: "Sample_ID", type: "string" },
+      { name: "Depth", type: "string" },
+      { name: "VOC_Concentration", type: "string" },
+      { name: "SVOC_Concentration", type: "string" },
+      { name: "Metals_Concentration", type: "string" }
+    ]
   },
   {
     document_type_id: "dt-4",
     name: "Site Survey Report",
-    properties: ["Survey_Date", "Surveyor", "Equipment_Used", "Coordinates", "Elevation"]
+    properties: [
+      { name: "Survey_Date", type: "date" },
+      { name: "Surveyor", type: "string" },
+      { name: "Equipment_Used", type: "string" },
+      { name: "Coordinates", type: "string" },
+      { name: "Elevation", type: "string" }
+    ]
   }
 ];
 

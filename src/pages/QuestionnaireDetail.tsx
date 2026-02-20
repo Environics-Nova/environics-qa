@@ -54,8 +54,9 @@ const QuestionnaireDetail = () => {
         }
 
         // Fetch document types for question editing
-        const docTypesResponse = await get<ApiResponse<DocumentType[]>>("/api/v1/document-types");
-        setDocumentTypes(docTypesResponse.data || []);
+        const docTypesResponse = await get<ApiResponse<Record<string, unknown>>>("/api/v1/document-types");
+        const dtList = docTypesResponse.data?.document_types || docTypesResponse.data;
+        setDocumentTypes(Array.isArray(dtList) ? dtList : []);
       } catch (err) {
         const apiError = err as ApiError;
         if (apiError.status === 404) {

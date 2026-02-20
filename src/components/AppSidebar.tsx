@@ -18,6 +18,7 @@ const items = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "QA/QC Processes", url: "/qaqc-processes", icon: CheckSquare },
   { title: "Questionnaires", url: "/questionnaires", icon: FileText },
+  { title: "Document Types", url: "/document-types", icon: FileText },
 ];
 
 export function AppSidebar() {

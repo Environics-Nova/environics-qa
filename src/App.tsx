@@ -18,6 +18,7 @@ import QAQCProcesses from "./pages/QAQCProcesses";
 import QAQCProcessDetail from "./pages/QAQCProcessDetail";
 import Questionnaires from "./pages/Questionnaires";
 import QuestionnaireDetail from "./pages/QuestionnaireDetail";
+import DocumentTypes from "./pages/DocumentTypes";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
@@ -67,7 +68,17 @@ const App = () => (
               </PublicRoute>
             }
           />
-
+          <Route
+            path="/document-types"
+            element={
+              <ProtectedRoute>
+                <AuthenticatedLayout>
+                  <DocumentTypes />
+                </AuthenticatedLayout>
+              </ProtectedRoute>
+            }
+          />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           {/* Protected routes with authenticated layout */}
           <Route
             path="/dashboard"
