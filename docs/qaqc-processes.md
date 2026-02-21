@@ -19,6 +19,7 @@ QA/QC (Quality Assurance/Quality Control) processes are automated validation che
 ### What is a QA/QC Process?
 
 A **QA/QC Process** is:
+
 - An automated validation workflow
 - A specific instance of questionnaire execution
 - Applied to a particular event's documents
@@ -28,6 +29,7 @@ A **QA/QC Process** is:
 ### Why QA/QC Matters
 
 **Benefits:**
+
 - **Catch errors early**: Identify issues before reports go to clients
 - **Ensure consistency**: Verify data matches across documents
 - **Save time**: Automate manual checking
@@ -36,6 +38,7 @@ A **QA/QC Process** is:
 - **Reduce rework**: Fix issues before final deliverables
 
 **Cost of poor data quality:**
+
 - Client complaints
 - Regulatory issues
 - Delayed deliverables
@@ -77,6 +80,7 @@ QA/QC Process
 ### How Validation Works
 
 **Question structure:**
+
 ```
 Document Property [Relation] Reference Value
 
@@ -87,37 +91,46 @@ Site Notes.Location [Contains] "Site A"
 ```
 
 **Evaluation:**
+
 1. System extracts values from documents
 2. Applies relation/operator
 3. Compares values
 4. Determines pass or fail
 5. Generates explanatory comment
 
-### Pass/Fail Logic
+### Pass/Fail/Pending Logic
 
 **Process passes when:**
+
 - ALL questions pass
 - No validation errors
-- All required documents present
-- All properties have values
+- All required documents are present and parsed
+- All properties have matched expected values
 
 **Process fails when:**
+
 - ANY question fails
-- Values don't match expected
-- Required documents missing
-- Properties not found
+- Extracted values don't match expected criteria
+
+**Process is pending when:**
+
+- Required documents have not yet been uploaded
+- Documents are currently undergoing AI extraction
+- Document extraction encountered an error and is awaiting re-upload
 
 ## Creating QA/QC Processes
 
 ### Prerequisites
 
-Before running a QA/QC process:
+Before a QA/QC process can **complete (pass/fail)**:
 
 1. **Event exists** with field activities completed
 2. **Documents uploaded** to the event
 3. **Documents processed** (status: "Parsed")
 4. **Properties extracted** from documents
 5. **Questionnaire available** for event type
+
+_(Note: You can initialize a QA/QC Process before documents are uploaded or finished processing. The process will remain in a "Pending" state and will automatically re-evaluate in the background once document data is ready.)_
 
 ### Access QA/QC Processes
 
@@ -128,25 +141,30 @@ Before running a QA/QC process:
 ### Create New Process
 
 **Step 1: Open Dialog**
+
 - Click "New Process" button
 - Dialog opens with form
 
 **Step 2: Select Event**
+
 - Dropdown shows available events
 - Choose event to validate
 - Events grouped by project
 
 **Step 3: Select Questionnaire**
+
 - Dropdown shows questionnaires
 - May filter by event type
 - Choose appropriate validation template
 
 **Step 4: Review and Run**
+
 - Verify selections
 - Click "Run Process" button
 - System executes validation
 
 **Step 5: View Results**
+
 - Process completes
 - Redirected to results page
 - Review pass/fail outcome
@@ -154,6 +172,7 @@ Before running a QA/QC process:
 ### Process Information
 
 Each process includes:
+
 - **Process Name**: Auto-generated or custom
 - **Description**: Purpose of validation
 - **Time**: When process was run
@@ -182,11 +201,13 @@ Questions Failed: 0
 ### Accessing Results
 
 **From Process List:**
+
 1. Navigate to "QA/QC Processes"
 2. Click on process card
 3. View detailed results
 
 **Process List Shows:**
+
 - Process name and description
 - Time executed
 - Event validated
@@ -196,23 +217,27 @@ Questions Failed: 0
 ### Results Page Layout
 
 **Header Section:**
+
 - Process name
 - Overall result (prominent badge)
 - Time and date
 - Back navigation
 
 **Event Information:**
+
 - Event name
 - Project association
 - Event type(s)
 - Date range
 
 **Questionnaire Information:**
+
 - Questionnaire name
 - Description
 - Number of questions
 
 **Results Section:**
+
 - List of all questions
 - Individual pass/fail status
 - System comments
@@ -223,20 +248,24 @@ Questions Failed: 0
 **For Each Question:**
 
 **Question Display:**
+
 ```
 Field Data Form.Sample ID Equals Lab Report.Sample ID
 ```
 
 **Status Indicator:**
+
 - ✓ Green checkmark = Passed
 - ✗ Red X = Failed
 
 **System Comment:**
+
 ```
 Sample ID 'SW-001' matches in both Field Data Form and Lab Report
 ```
 
 **Values Shown:**
+
 ```
 Field Data Form.Sample ID: SW-001
 Lab Report.Sample ID: SW-001
@@ -246,6 +275,7 @@ Result: Values match ✓
 ### Filtering Results
 
 **View options:**
+
 - All questions
 - Failed questions only (if any)
 - Passed questions only
@@ -254,21 +284,50 @@ Result: Values match ✓
 
 ## Interpreting Results
 
+### Pending Process
+
+**What it means:**
+
+- Documents required for the questionnaire have not been uploaded yet.
+- Uploaded documents are currently undergoing AI extraction.
+- Document extraction failed, so the system cannot complete the validation.
+
+**Actions:**
+
+- Upload missing documents for the event.
+- Wait for AI extraction to complete (the QA/QC process will automatically re-evaluate in the background when the document finishes parsing).
+- Check if document extraction failed and needs re-uploading.
+
+**Example:**
+
+```
+⏳ Process Pending
+
+Waiting for AI extraction to complete for required documents.
+
+Pending Questions:
+- Awaiting document upload for document type 'Equipment Calibration Log'
+- Document type 'Lab Report' is awaiting AI extraction (status: Processing)
+```
+
 ### Passed Process
 
 **What it means:**
+
 - All validation questions passed
 - Data is consistent across documents
 - No errors detected
 - Quality standards met
 
 **Actions:**
+
 - No immediate action required
 - Document the validation
 - Proceed with project
 - Include in final report
 
 **Example:**
+
 ```
 ✓ Process Passed
 
@@ -280,12 +339,14 @@ No issues detected.
 ### Failed Process
 
 **What it means:**
+
 - One or more questions failed
 - Data inconsistencies found
 - Potential errors in documents
 - Review required
 
 **Actions:**
+
 - Review failed questions
 - Check source documents
 - Identify root cause
@@ -293,6 +354,7 @@ No issues detected.
 - Re-run process
 
 **Example:**
+
 ```
 ✗ Process Failed
 
@@ -309,6 +371,7 @@ Failed Questions:
 #### Passed Question Examples
 
 **Example 1: Exact Match**
+
 ```
 Question: Field Form.Sample ID Equals Lab Report.Sample ID
 Status: Passed ✓
@@ -319,6 +382,7 @@ Values:
 ```
 
 **Example 2: Threshold Check**
+
 ```
 Question: Lab Report.pH > 6.5
 Status: Passed ✓
@@ -329,6 +393,7 @@ Values:
 ```
 
 **Example 3: Contains Check**
+
 ```
 Question: Field Notes.Location Contains "Site A"
 Status: Passed ✓
@@ -341,6 +406,7 @@ Values:
 #### Failed Question Examples
 
 **Example 1: Mismatch**
+
 ```
 Question: Field Form.Sample ID Equals Lab Report.Sample ID
 Status: Failed ✗
@@ -352,6 +418,7 @@ Action: Verify which ID is correct and update accordingly
 ```
 
 **Example 2: Threshold Violation**
+
 ```
 Question: Lab Report.pH > 6.5
 Status: Failed ✗
@@ -363,6 +430,7 @@ Action: Verify pH reading or check if sample requires reanalysis
 ```
 
 **Example 3: Missing Text**
+
 ```
 Question: Field Notes.Location Contains "Site A"
 Status: Failed ✗
@@ -378,28 +446,33 @@ Action: Verify location was correctly documented
 ### Investigation Process
 
 **Step 1: Identify Failed Questions**
+
 - Review results page
 - Note which questions failed
 - Understand what was being validated
 
 **Step 2: Examine Source Documents**
+
 - Open relevant documents
 - Find the properties in question
 - Check actual values
 
 **Step 3: Determine Root Cause**
+
 - Data entry error?
 - Transcription mistake?
 - Document processing error?
 - Legitimate discrepancy?
 
 **Step 4: Take Corrective Action**
+
 - Update incorrect data
 - Re-scan document if needed
 - Verify with field team
 - Document the correction
 
 **Step 5: Re-validate**
+
 - Re-run QA/QC process
 - Verify issue is resolved
 - Document resolution
@@ -409,6 +482,7 @@ Action: Verify location was correctly documented
 #### Scenario 1: Typo in Sample ID
 
 **Failed Question:**
+
 ```
 Field Form.Sample ID ≠ Lab Report.Sample ID
 Field: SW-001
@@ -416,6 +490,7 @@ Lab: SW-OO1 (zero instead of O)
 ```
 
 **Solution:**
+
 - Identify which is correct
 - Update incorrect document
 - Re-upload and process
@@ -424,6 +499,7 @@ Lab: SW-OO1 (zero instead of O)
 #### Scenario 2: Date Format Inconsistency
 
 **Failed Question:**
+
 ```
 Field Form.Collection Date ≠ Lab Report.Sample Date
 Field: 2025-01-20
@@ -431,6 +507,7 @@ Lab: Jan 20, 2025
 ```
 
 **Solution:**
+
 - Verify dates represent same day
 - May require standardized format
 - Update if different dates
@@ -439,11 +516,13 @@ Lab: Jan 20, 2025
 #### Scenario 3: Missing Required Information
 
 **Failed Question:**
+
 ```
 Cannot validate: Property 'GPS Coordinates' not found in Field Form
 ```
 
 **Solution:**
+
 - Check if field was left blank
 - Verify property name spelling
 - Add missing information
@@ -453,6 +532,7 @@ Cannot validate: Property 'GPS Coordinates' not found in Field Form
 #### Scenario 4: Measurement Out of Range
 
 **Failed Question:**
+
 ```
 Temperature reading < 0°C
 Lab Report.Temperature: -5°C
@@ -460,6 +540,7 @@ Minimum: 0°C
 ```
 
 **Solution:**
+
 - Verify reading is accurate
 - Check if sample was frozen
 - Determine if reading is valid
@@ -488,6 +569,7 @@ Investigate further or contact support
 ### When to Run QA/QC
 
 **Recommended timing:**
+
 - After all event documents uploaded
 - After documents processed (status: Parsed)
 - Before generating reports
@@ -495,6 +577,7 @@ Investigate further or contact support
 - Before client delivery
 
 **Process frequency:**
+
 ```
 Initial: After document upload
 Interim: After corrections
@@ -505,6 +588,7 @@ Archive: For record keeping
 ### Choosing Questionnaires
 
 **Select based on:**
+
 - Event type (PVV, GWMS, Drilling, etc.)
 - Document types available
 - Validation requirements
@@ -512,6 +596,7 @@ Archive: For record keeping
 - Regulatory standards
 
 **Match questionnaire to event:**
+
 ```
 GWMS Event → Groundwater Monitoring QA/QC
 Drilling Event → Drilling Documentation QA/QC
@@ -521,6 +606,7 @@ Sampling Event → Sample Collection QA/QC
 ### Documentation
 
 **Record keeping:**
+
 - Save all QA/QC results
 - Document failed validations
 - Track corrections made
@@ -528,6 +614,7 @@ Sampling Event → Sample Collection QA/QC
 - Include in project records
 
 **QA/QC summary:**
+
 ```
 Process: Groundwater Monitoring QA/QC
 Date: 2025-01-21
@@ -541,12 +628,14 @@ Final Result: Approved ✓
 ### Handling Failures
 
 **Don't:**
+
 - Ignore failed validations
 - Skip re-validation
 - Deliver without resolving
 - Make corrections without verification
 
 **Do:**
+
 - Investigate thoroughly
 - Correct root causes
 - Verify corrections
@@ -556,12 +645,14 @@ Final Result: Approved ✓
 ### Continuous Improvement
 
 **Review trends:**
+
 - Common failure types
 - Frequent error sources
 - Process improvements needed
 - Training requirements
 
 **Implement improvements:**
+
 - Update field forms
 - Enhance training
 - Refine processes
@@ -570,6 +661,7 @@ Final Result: Approved ✓
 ### Quality Culture
 
 **Promote quality:**
+
 - Make QA/QC standard practice
 - Train all team members
 - Celebrate high quality
@@ -581,6 +673,7 @@ Final Result: Approved ✓
 ### Complex Validations
 
 **Multi-step validations:**
+
 1. Check data completeness
 2. Verify data consistency
 3. Validate against standards
@@ -588,6 +681,7 @@ Final Result: Approved ✓
 5. Check regulatory compliance
 
 **Hierarchical checks:**
+
 ```
 Level 1: Basic data presence
 Level 2: Format validation
@@ -599,6 +693,7 @@ Level 5: Regulatory compliance
 ### QA/QC Metrics
 
 **Track metrics:**
+
 - Pass rate (% of processes passing)
 - Common failure types
 - Time to resolution
@@ -606,6 +701,7 @@ Level 5: Regulatory compliance
 - Quality trends over time
 
 **Example metrics:**
+
 ```
 Month: January 2025
 Processes Run: 45
@@ -619,6 +715,7 @@ Avg Resolution Time: 1.2 days
 ### Integration with Workflows
 
 **Embed QA/QC in workflow:**
+
 ```
 Document Upload
     ↓
@@ -632,6 +729,7 @@ QA/QC Validation ← [Decision Point]
 ## Future Enhancements
 
 **Planned features:**
+
 - Automated process triggering
 - Email notifications
 - Custom questionnaire creation
@@ -646,11 +744,13 @@ QA/QC Validation ← [Decision Point]
 ## Resources
 
 ### Internal Resources
+
 - [Questionnaires Guide](./questionnaires.md)
 - [User Manual](./user-manual.md)
 - [Project Management](./project-management.md)
 
 ### Quality Standards
+
 - ISO 9001 Quality Management
 - ISO/IEC 17025 Laboratory Standards
 - Environmental regulations
@@ -658,4 +758,4 @@ QA/QC Validation ← [Decision Point]
 
 ---
 
-*Quality is not an act, it is a habit. - Aristotle*
+_Quality is not an act, it is a habit. - Aristotle_
