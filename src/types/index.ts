@@ -2,15 +2,15 @@ export type ProjectStatus = "Not Started" | "In Progress" | "Completed" | "Cance
 
 export type EventType = "PVV" | "GWMS" | "Drilling" | "SV_Sampling" | "Excavation" | "Survey";
 
-export type DocumentStatus = "Not Uploaded" | "Processing" | "Parsed";
+export type DocumentStatus = "Not Uploaded" | "Processing" | "Parsed" | "Extraction Failed";
 
 export type FileFormat = "PDF" | "Excel" | "Word" | "CSV" | "Image";
 
 export type RelationType = "Equals" | "Not Equals" | "Contains" | ">" | "<";
 
-export type QAQCResult = "Passed" | "Failed";
+export type QAQCResult = "Passed" | "Failed" | "Pending";
 
-export type QuestionStatus = "Passed" | "Failed";
+export type QuestionStatus = "Passed" | "Failed" | "Pending";
 
 // API Response types
 export interface ApiResponse<T> {

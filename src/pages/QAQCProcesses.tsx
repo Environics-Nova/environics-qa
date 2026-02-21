@@ -114,11 +114,19 @@ const QAQCProcesses = () => {
                       </div>
                     </div>
                     <Badge 
-                      variant={process.result === "Passed" ? "default" : "destructive"}
-                      className="flex items-center gap-1"
+                      variant="outline"
+                      className={`flex items-center gap-1 font-semibold ${
+                        process.result === "Passed"
+                          ? "bg-emerald-500/15 text-emerald-700 border-emerald-300"
+                          : process.result === "Pending"
+                          ? "bg-amber-500/15 text-amber-700 border-amber-300"
+                          : "bg-red-500/15 text-red-700 border-red-300"
+                      }`}
                     >
                       {process.result === "Passed" ? (
                         <CheckCircle className="h-3 w-3" />
+                      ) : process.result === "Pending" ? (
+                        <Clock className="h-3 w-3 animate-pulse" />
                       ) : (
                         <XCircle className="h-3 w-3" />
                       )}
