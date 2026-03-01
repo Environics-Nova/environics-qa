@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Dialog,
   DialogContent,
@@ -15,10 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { Upload, Loader2, CheckCircle2, AlertCircle } from "lucide-react";
+import { Upload, Loader2, CheckCircle2, AlertCircle, ExternalLink } from "lucide-react";
 import { supabase, STORAGE_BUCKET } from "../lib/supabase";
 import { useApiClient } from "../hooks/use-api-client";
 import { DocumentType, ApiResponse, Document } from "../types";
+import { FILE_FORMAT_MAP, ACCEPTED_FILE_EXTENSIONS } from "../constants";
 
 interface UploadDocumentDialogProps {
   eventId: string;
@@ -34,6 +36,7 @@ export default function UploadDocumentDialog({
   onUploaded,
 }: UploadDocumentDialogProps) {
   const { post } = useApiClient();
+  const navigate = useNavigate();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [open, setOpen] = useState(false);
@@ -41,12 +44,14 @@ export default function UploadDocumentDialog({
   const [file, setFile] = useState<File | null>(null);
   const [step, setStep] = useState<UploadStep>("idle");
   const [errorMsg, setErrorMsg] = useState("");
+  const [uploadedDoc, setUploadedDoc] = useState<Document | null>(null);
 
   const resetState = () => {
     setSelectedTypeId("");
     setFile(null);
     setStep("idle");
     setErrorMsg("");
+    setUploadedDoc(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
@@ -58,19 +63,8 @@ export default function UploadDocumentDialog({
   };
 
   const getFileFormat = (file: File) => {
-    const ext = file.name.split(".").pop()?.toLowerCase();
-    const map: Record<string, string> = {
-      pdf: "PDF",
-      xls: "Excel",
-      xlsx: "Excel",
-      doc: "Word",
-      docx: "Word",
-      csv: "CSV",
-      png: "Image",
-      jpg: "Image",
-      jpeg: "Image",
-    };
-    return map[ext ?? ""] ?? "PDF";
+    const ext = file.name.split(".").pop()?.toLowerCase() ?? "";
+    return FILE_FORMAT_MAP[ext] ?? "PDF";
   };
 
   const handleUpload = async () => {
@@ -106,16 +100,19 @@ export default function UploadDocumentDialog({
       }
 
       setStep("done");
+      setUploadedDoc(response.data);
       onUploaded(response.data);
-
-      // Auto-close after short delay
-      setTimeout(() => {
-        setOpen(false);
-        resetState();
-      }, 1500);
     } catch (err) {
       setStep("error");
       setErrorMsg(err instanceof Error ? err.message : "Upload failed");
+    }
+  };
+
+  const handleViewDocument = () => {
+    if (uploadedDoc) {
+      setOpen(false);
+      resetState();
+      navigate(`/document/${uploadedDoc.id}`);
     }
   };
 
@@ -147,7 +144,7 @@ export default function UploadDocumentDialog({
           {/* Document Type */}
           <div className="space-y-2">
             <Label>Document Type</Label>
-            <Select value={selectedTypeId} onValueChange={setSelectedTypeId} disabled={isLoading}>
+            <Select value={selectedTypeId} onValueChange={setSelectedTypeId} disabled={isLoading || step === "done"}>
               <SelectTrigger>
                 <SelectValue placeholder="Select document type" />
               </SelectTrigger>
@@ -166,7 +163,7 @@ export default function UploadDocumentDialog({
             <Label>File</Label>
             <div
               className="border-2 border-dashed border-border rounded-lg p-6 text-center cursor-pointer hover:border-primary/50 transition-colors"
-              onClick={() => !isLoading && fileInputRef.current?.click()}
+              onClick={() => !isLoading && step !== "done" && fileInputRef.current?.click()}
             >
               {file ? (
                 <p className="text-sm font-medium">{file.name}</p>
@@ -180,16 +177,26 @@ export default function UploadDocumentDialog({
               ref={fileInputRef}
               type="file"
               className="hidden"
-              accept=".pdf,.xls,.xlsx,.doc,.docx,.csv,.png,.jpg,.jpeg"
+              accept={ACCEPTED_FILE_EXTENSIONS}
               onChange={handleFileChange}
             />
           </div>
 
           {/* Status feedback */}
           {step === "done" && (
-            <div className="flex items-center gap-2 text-sm text-green-600">
-              <CheckCircle2 className="w-4 h-4" />
-              Document uploaded and queued for extraction!
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm text-green-600">
+                <CheckCircle2 className="w-4 h-4" />
+                Document uploaded and queued for extraction!
+              </div>
+              <Button
+                variant="outline"
+                className="w-full gap-2"
+                onClick={handleViewDocument}
+              >
+                <ExternalLink className="w-4 h-4" />
+                View Document &amp; PDF
+              </Button>
             </div>
           )}
           {step === "error" && (
@@ -206,16 +213,18 @@ export default function UploadDocumentDialog({
               onClick={() => { setOpen(false); resetState(); }}
               disabled={isLoading}
             >
-              Cancel
+              {step === "done" ? "Close" : "Cancel"}
             </Button>
-            <Button
-              onClick={handleUpload}
-              disabled={!file || !selectedTypeId || isLoading || step === "done"}
-              className="gap-2"
-            >
-              {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {stepLabel[step]}
-            </Button>
+            {step !== "done" && (
+              <Button
+                onClick={handleUpload}
+                disabled={!file || !selectedTypeId || isLoading}
+                className="gap-2"
+              >
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                {stepLabel[step]}
+              </Button>
+            )}
           </div>
         </div>
       </DialogContent>

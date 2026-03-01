@@ -8,6 +8,7 @@ import UploadDocumentDialog from "../components/UploadDocumentDialog";
 import { ArrowLeft, Calendar, Clock, Eye, FileText, Loader2, AlertCircle, RefreshCw } from "lucide-react";
 import { Document, DocumentType, Event, ApiResponse } from "../types";
 import { useApiClient, ApiError } from "../hooks/use-api-client";
+import { EVENT_TYPE_TO_DOC_TYPE } from "../constants";
 
 const EventDetail = () => {
   const { eventId } = useParams();
@@ -85,20 +86,10 @@ const EventDetail = () => {
   // Get required document types based on event types
   const getRequiredDocumentTypes = (): DocumentType[] => {
     if (!currentEvent || !Array.isArray(documentTypes)) return [];
-    
-    // Map event types to document type names (this is a simplified mapping)
-    const eventTypeToDocType: Record<string, string[]> = {
-      "Drilling": ["Drilling Log"],
-      "GWMS": ["Groundwater Monitoring"],
-      "SV_Sampling": ["Soil Sample Analysis"],
-      "Survey": ["Site Survey Report"],
-      "PVV": [],
-      "Excavation": [],
-    };
 
     const requiredNames = new Set<string>();
     currentEvent.event_types.forEach(type => {
-      const docTypes = eventTypeToDocType[type] || [];
+      const docTypes = EVENT_TYPE_TO_DOC_TYPE[type] || [];
       docTypes.forEach(name => requiredNames.add(name));
     });
 

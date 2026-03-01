@@ -37,10 +37,10 @@ All colors MUST be HSL.
     /* Status Colors */
     --success: 140 60% 35%;
     --success-foreground: 0 0% 98%;
-    
+
     --warning: 45 85% 55%;
     --warning-foreground: 210 15% 20%;
-    
+
     --destructive: 0 75% 55%;
     --destructive-foreground: 0 0% 98%;
 
@@ -118,4 +118,34 @@ All colors MUST be HSL.
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* ── PDF Viewer Styles ───────────────────────── */
+.pdf-document {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.pdf-page {
+  background: white;
+}
+
+.pdf-page canvas {
+  max-width: 100%;
+  height: auto !important;
+}
+
+/* react-pdf text layer alignment */
+.react-pdf__Page__textContent {
+  pointer-events: auto;
+}
+
+.react-pdf__Page__textContent span::selection {
+  background: hsl(var(--primary) / 0.25);
+}
+
+/* Resizable panel handle styling */
+[data-panel-group-direction="horizontal"] > [data-resize-handle-active] {
+  background-color: hsl(var(--primary) / 0.15);
 }

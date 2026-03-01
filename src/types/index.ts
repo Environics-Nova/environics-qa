@@ -1,18 +1,17 @@
+// ──────────────────────────────────────────────
+// Status & Enum Types
+// ──────────────────────────────────────────────
 export type ProjectStatus = "Not Started" | "In Progress" | "Completed" | "Cancelled";
-
 export type EventType = "PVV" | "GWMS" | "Drilling" | "SV_Sampling" | "Excavation" | "Survey";
-
 export type DocumentStatus = "Not Uploaded" | "Processing" | "Parsed" | "Extraction Failed";
-
 export type FileFormat = "PDF" | "Excel" | "Word" | "CSV" | "Image";
-
 export type RelationType = "Equals" | "Not Equals" | "Contains" | ">" | "<";
-
 export type QAQCResult = "Passed" | "Failed" | "Pending";
-
 export type QuestionStatus = "Passed" | "Failed" | "Pending";
 
-// API Response types
+// ──────────────────────────────────────────────
+// API Response Envelopes
+// ──────────────────────────────────────────────
 export interface ApiResponse<T> {
   success: boolean;
   data?: T;
@@ -32,7 +31,9 @@ export interface PaginatedResponse<T> {
   };
 }
 
-// Domain types matching API responses
+// ──────────────────────────────────────────────
+// Domain Models
+// ──────────────────────────────────────────────
 export interface Project {
   id: string;
   name: string;
@@ -43,17 +44,6 @@ export interface Project {
   end_date?: string;
   created_at?: string;
   updated_at?: string;
-}
-
-// Legacy type alias for backward compatibility
-export interface LegacyProject {
-  project_id: string;
-  name: string;
-  client: string;
-  location: string;
-  status: ProjectStatus;
-  start_date: string;
-  end_date?: string;
 }
 
 export interface Event {
@@ -68,16 +58,6 @@ export interface Event {
   updated_at?: string;
 }
 
-// Legacy type alias for backward compatibility
-export interface LegacyEvent {
-  event_id: string;
-  name: string;
-  project: LegacyProject;
-  start_datetime: string;
-  end_datetime: string;
-  event_types: EventType[];
-}
-
 export interface PropertyDef {
   name: string;
   type: string;
@@ -90,13 +70,6 @@ export interface DocumentType {
   organization_id?: string;
   created_at?: string;
   updated_at?: string;
-}
-
-// Legacy type alias for backward compatibility
-export interface LegacyDocumentType {
-  document_type_id: string;
-  name: string;
-  properties: string[];
 }
 
 export interface Document {
@@ -116,17 +89,6 @@ export interface Document {
   updated_at?: string;
 }
 
-// Legacy type alias for backward compatibility
-export interface LegacyDocument {
-  document_id: string;
-  event: LegacyEvent;
-  type: LegacyDocumentType;
-  file_name: string;
-  file_format: FileFormat;
-  properties_values: Record<string, string | number | boolean | null>;
-  status: DocumentStatus;
-}
-
 export interface Question {
   id: string;
   questionnaire_id: string;
@@ -141,18 +103,6 @@ export interface Question {
   document_2?: DocumentType;
 }
 
-// Legacy type alias for backward compatibility
-export interface LegacyQuestion {
-  question_id: string;
-  document_1: LegacyDocumentType;
-  property_1: string;
-  relation: RelationType;
-  document_2?: LegacyDocumentType;
-  property_2?: string;
-  comparison_value?: string;
-  system_value: string;
-}
-
 export interface Questionnaire {
   id: string;
   name: string;
@@ -165,15 +115,6 @@ export interface Questionnaire {
   updated_at?: string;
 }
 
-// Legacy type alias for backward compatibility
-export interface LegacyQuestionnaire {
-  questionnaire_id: string;
-  name: string;
-  description: string;
-  event_type?: EventType;
-  questions: LegacyQuestion[];
-}
-
 export interface Result {
   id: string;
   process_id: string;
@@ -181,13 +122,6 @@ export interface Result {
   status: QuestionStatus;
   comment: string;
   question?: Question;
-}
-
-// Legacy type alias for backward compatibility
-export interface LegacyResult {
-  question: LegacyQuestion;
-  status: QuestionStatus;
-  comment: string;
 }
 
 export interface QAQCProcess {
@@ -205,19 +139,9 @@ export interface QAQCProcess {
   updated_at?: string;
 }
 
-// Legacy type alias for backward compatibility
-export interface LegacyQAQCProcess {
-  process_id: string;
-  name: string;
-  description: string;
-  time: string;
-  event: LegacyEvent;
-  questionnaire: LegacyQuestionnaire;
-  result: QAQCResult;
-  results: LegacyResult[];
-}
-
+// ──────────────────────────────────────────────
 // Request DTOs
+// ──────────────────────────────────────────────
 export interface CreateProjectRequest {
   name: string;
   client: string;

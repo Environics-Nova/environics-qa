@@ -1,13 +1,14 @@
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { UserButton } from "@clerk/clerk-react";
-import { AppSidebar } from "@/components/AppSidebar";
+
+import { AuthenticatedLayout } from "@/layouts/AuthenticatedLayout";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import PublicRoute from "@/components/PublicRoute";
+
+// ── Pages ──────────────────────────────────────
 import Landing from "./pages/Landing";
 import Index from "./pages/Index";
 import ProjectDetail from "./pages/ProjectDetail";
@@ -25,20 +26,13 @@ import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
 
-// Layout component for authenticated pages with sidebar
-const AuthenticatedLayout = ({ children }: { children: React.ReactNode }) => (
-  <SidebarProvider>
-    <div className="min-h-screen flex w-full">
-      <AppSidebar />
-      <main className="flex-1 flex flex-col">
-        <header className="h-12 flex items-center justify-between border-b bg-background px-2">
-          <SidebarTrigger />
-          <UserButton afterSignOutUrl="/sign-in" />
-        </header>
-        <div className="flex-1">{children}</div>
-      </main>
-    </div>
-  </SidebarProvider>
+/**
+ * Wraps a page in the authenticated layout with sidebar + header.
+ */
+const withAuth = (page: React.ReactNode) => (
+  <ProtectedRoute>
+    <AuthenticatedLayout>{page}</AuthenticatedLayout>
+  </ProtectedRoute>
 );
 
 const App = () => (
@@ -48,130 +42,30 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          {/* Public landing page */}
+          {/* Public routes */}
           <Route path="/" element={<Landing />} />
-
-          {/* Public auth routes */}
           <Route
             path="/sign-in/*"
-            element={
-              <PublicRoute>
-                <SignInPage />
-              </PublicRoute>
-            }
+            element={<PublicRoute><SignInPage /></PublicRoute>}
           />
           <Route
             path="/sign-up/*"
-            element={
-              <PublicRoute>
-                <SignUpPage />
-              </PublicRoute>
-            }
-          />
-          <Route
-            path="/document-types"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <DocumentTypes />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          {/* Protected routes with authenticated layout */}
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <Index />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/project/new"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <NewProject />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/project/:projectId"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <ProjectDetail />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/event/:eventId"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <EventDetail />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/document/:documentId"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <DocumentDetail />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/qaqc-processes"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <QAQCProcesses />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/qaqc-processes/:processId"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <QAQCProcessDetail />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/questionnaires"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <Questionnaires />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/questionnaires/:id"
-            element={
-              <ProtectedRoute>
-                <AuthenticatedLayout>
-                  <QuestionnaireDetail />
-                </AuthenticatedLayout>
-              </ProtectedRoute>
-            }
+            element={<PublicRoute><SignUpPage /></PublicRoute>}
           />
 
-          {/* Catch-all route */}
+          {/* Authenticated routes */}
+          <Route path="/dashboard" element={withAuth(<Index />)} />
+          <Route path="/project/new" element={withAuth(<NewProject />)} />
+          <Route path="/project/:projectId" element={withAuth(<ProjectDetail />)} />
+          <Route path="/event/:eventId" element={withAuth(<EventDetail />)} />
+          <Route path="/document/:documentId" element={withAuth(<DocumentDetail />)} />
+          <Route path="/document-types" element={withAuth(<DocumentTypes />)} />
+          <Route path="/qaqc-processes" element={withAuth(<QAQCProcesses />)} />
+          <Route path="/qaqc-processes/:processId" element={withAuth(<QAQCProcessDetail />)} />
+          <Route path="/questionnaires" element={withAuth(<Questionnaires />)} />
+          <Route path="/questionnaires/:id" element={withAuth(<QuestionnaireDetail />)} />
+
+          {/* Catch-all */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>
