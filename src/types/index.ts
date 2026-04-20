@@ -2,7 +2,7 @@
 // Status & Enum Types
 // ──────────────────────────────────────────────
 export type ProjectStatus = "Not Started" | "In Progress" | "Completed" | "Cancelled";
-export type EventType = "PVV" | "GWMS" | "Drilling" | "SV_Sampling" | "Excavation" | "Survey";
+export type EventType = "PVV" | "GWMS" | "Drilling" | "SVSampling" | "Excavation" | "Survey";
 export type DocumentStatus = "Not Uploaded" | "Processing" | "Parsed" | "Extraction Failed";
 export type FileFormat = "PDF" | "Excel" | "Word" | "CSV" | "Image";
 export type RelationType = "Equals" | "Not Equals" | "Contains" | ">" | "<";

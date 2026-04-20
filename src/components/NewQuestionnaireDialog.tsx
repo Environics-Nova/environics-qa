@@ -37,7 +37,7 @@ const formSchema = z.object({
   event_type: z.string().min(1, "Event type is required"),
 });
 
-const EVENT_TYPES: EventType[] = ["PVV", "GWMS", "Drilling", "SV_Sampling", "Excavation", "Survey"];
+const EVENT_TYPES: EventType[] = ["PVV", "GWMS", "Drilling", "SVSampling", "Excavation", "Survey"];
 
 interface NewQuestionnaireDialogProps {
   open: boolean;

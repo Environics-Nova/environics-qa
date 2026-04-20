@@ -23,6 +23,7 @@ import DocumentTypes from "./pages/DocumentTypes";
 import SignInPage from "./pages/SignIn";
 import SignUpPage from "./pages/SignUp";
 import NotFound from "./pages/NotFound";
+import BoreLogDemo from "./pages/BoreLogDemo";
 
 const queryClient = new QueryClient();
 
@@ -64,6 +65,7 @@ const App = () => (
           <Route path="/qaqc-processes/:processId" element={withAuth(<QAQCProcessDetail />)} />
           <Route path="/questionnaires" element={withAuth(<Questionnaires />)} />
           <Route path="/questionnaires/:id" element={withAuth(<QuestionnaireDetail />)} />
+          <Route path="/bore-log-demo" element={withAuth(<BoreLogDemo />)} />
 
           {/* Catch-all */}
           <Route path="*" element={<NotFound />} />

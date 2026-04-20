@@ -44,7 +44,7 @@ export function EditQuestionnaireDialog({
   onSave,
 }: EditQuestionnaireDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
-  const eventTypes: EventType[] = ["PVV", "GWMS", "Drilling", "SV_Sampling", "Excavation", "Survey"];
+  const eventTypes: EventType[] = ["PVV", "GWMS", "Drilling", "SVSampling", "Excavation", "Survey"];
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

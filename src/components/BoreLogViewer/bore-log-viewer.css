@@ -1,0 +1,403 @@
+/* ──────────────────────────────────────────────
+   Bore Log Viewer — Styles
+   Professional monochrome design matching ESlog
+   ────────────────────────────────────────────── */
+
+.bore-log-viewer {
+  font-family: Arial, Helvetica, sans-serif;
+  color: #000;
+  background: #fff;
+}
+
+/* ── Report Container ─────────────────────── */
+.bore-log-report {
+  width: 100%;
+  border: 1px solid #000;
+  background: #fff;
+  font-size: 8px;
+  line-height: 1.3;
+  box-sizing: border-box;
+}
+
+/* ── Report Selector ──────────────────────── */
+.bore-log-selector {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  padding: 8px 12px;
+  background: #f8f9fa;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+}
+
+.bore-log-selector label {
+  font-weight: 600;
+  font-size: 13px;
+  color: #333;
+  white-space: nowrap;
+}
+
+.bore-log-selector select {
+  padding: 6px 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  font-size: 13px;
+  color: #333;
+  cursor: pointer;
+  min-width: 180px;
+}
+
+.bore-log-selector select:focus {
+  outline: none;
+  border-color: #5ba3c7;
+  box-shadow: 0 0 0 2px rgba(91, 163, 199, 0.2);
+}
+
+/* ── Header Section ───────────────────────── */
+.bore-log-header {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.bore-log-header-row {
+  display: flex;
+  width: 100%;
+}
+
+.bore-log-header-col {
+  box-sizing: border-box;
+  padding: 3px 6px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  flex: 1;
+}
+
+.bore-log-header-col.border-top { border-top: 1px solid #000; }
+.bore-log-header-col.border-left { border-left: 1px solid #000; }
+.bore-log-header-col.border-right { border-right: 1px solid #000; }
+.bore-log-header-col.border-all { border: 1px solid #000; }
+.bore-log-header-col.valign-middle { justify-content: center; }
+.bore-log-header-col.halign-left { text-align: left; }
+.bore-log-header-col.halign-center { text-align: center; }
+.bore-log-header-col.halign-right { text-align: right; }
+
+.bore-log-header-item {
+  margin: 1px 0;
+  display: flex;
+  gap: 4px;
+  align-items: flex-start;
+}
+
+.bore-log-header-item.item-image {
+  display: block;
+}
+
+.bore-log-header-item .item-label {
+  font-weight: 700;
+  font-size: 8px;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.bore-log-header-item .item-value {
+  font-weight: 400;
+  font-size: 8px;
+}
+
+.bore-log-header-item .item-title {
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.5px;
+}
+
+.bore-log-header-logo {
+  max-width: 100px;
+  max-height: 28px;
+  object-fit: contain;
+}
+
+/* ── Column Headers ───────────────────────── */
+.bore-log-column-headers {
+  display: flex;
+  border-top: 1px solid #000;
+  border-bottom: 1px solid #000;
+  min-height: 60px;
+}
+
+.bore-log-col-header {
+  box-sizing: border-box;
+  border-right: 1px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px 1px;
+  overflow: hidden;
+  position: relative;
+}
+
+.bore-log-col-header:last-child {
+  border-right: none;
+}
+
+.bore-log-col-header-text {
+  font-size: 7px;
+  font-weight: 600;
+  text-align: center;
+  line-height: 1.2;
+  color: #000;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.bore-log-col-header-text.rotated {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  white-space: nowrap;
+  font-size: 7px;
+  padding: 2px 0;
+}
+
+/* ── Body Section ─────────────────────────── */
+.bore-log-body {
+  display: flex;
+  position: relative;
+  border-bottom: 1px solid #000;
+}
+
+.bore-log-column {
+  box-sizing: border-box;
+  border-right: 1px solid #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.bore-log-column:last-child {
+  border-right: none;
+}
+
+/* ── Axis / Ruler ─────────────────────────── */
+.bore-log-axis {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* Vertical spine along tick edge */
+.bore-log-axis .ruler-spine {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  border-left: 1px solid #000;
+}
+
+/* ── Depth axis: spine + ticks on RIGHT, labels on LEFT ── */
+.bore-log-axis.depth .ruler-spine {
+  right: 0;
+}
+
+.bore-log-axis.depth .ruler-tick {
+  position: absolute;
+  right: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.bore-log-axis.depth .ruler-tick-line {
+  height: 1px;
+  background: #000;
+}
+
+.bore-log-axis.depth .ruler-tick.major .ruler-tick-line {
+  width: 12px;
+}
+
+.bore-log-axis.depth .ruler-tick.minor .ruler-tick-line {
+  width: 6px;
+}
+
+.bore-log-axis.depth .ruler-tick-label {
+  position: absolute;
+  right: 16px;
+  transform: translateY(-50%);
+  top: 0;
+  font-size: 8px;
+  font-weight: 600;
+  color: #000;
+  white-space: nowrap;
+}
+
+/* ── Elevation axis: spine + ticks on LEFT, labels on RIGHT ── */
+.bore-log-axis.elevation .ruler-spine {
+  left: 0;
+}
+
+.bore-log-axis.elevation .ruler-tick {
+  position: absolute;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.bore-log-axis.elevation .ruler-tick-line {
+  height: 1px;
+  background: #000;
+}
+
+.bore-log-axis.elevation .ruler-tick.major .ruler-tick-line {
+  width: 12px;
+}
+
+.bore-log-axis.elevation .ruler-tick.minor .ruler-tick-line {
+  width: 6px;
+}
+
+.bore-log-axis.elevation .ruler-tick-label {
+  position: absolute;
+  left: 16px;
+  transform: translateY(-50%);
+  top: 0;
+  font-size: 8px;
+  font-weight: 600;
+  color: #000;
+  white-space: nowrap;
+}
+
+/* ── Text Column ──────────────────────────── */
+.bore-log-text-block {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  font-size: 7px;
+  line-height: 1.2;
+  overflow: hidden;
+  padding: 1px 0;
+  display: flex;
+  align-items: flex-start;
+}
+
+.bore-log-text-block .block-text {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.bore-log-text-block.narrow {
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.bore-log-end-depth-comment {
+  position: absolute;
+  left: 2px;
+  right: 2px;
+  font-size: 7px;
+  font-style: italic;
+  color: #555;
+  padding-top: 2px;
+  border-top: 1px dashed #999;
+}
+
+.bore-log-depth-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 1px dashed #999;
+}
+
+/* ── Chart Column ─────────────────────────── */
+.bore-log-chart {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Well Diagram ─────────────────────────── */
+.bore-log-well-diagram {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.bore-log-well-annotation {
+  position: absolute;
+  right: 2px;
+  font-size: 6px;
+  color: #333;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.bore-log-well-name {
+  font-size: 6px;
+  font-weight: 700;
+  text-anchor: middle;
+  fill: #000;
+}
+
+/* ── Depth Ruler Lines ────────────────────── */
+.bore-log-ruler-line {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 0;
+  border-top: 0.5px solid #bbb;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* ── Water Strike ─────────────────────────── */
+.bore-log-water-strike {
+  position: absolute;
+  left: 0;
+  right: 0;
+}
+
+/* ── Footer Section ───────────────────────── */
+.bore-log-footer {
+  width: 100%;
+  border-top: 1px solid #000;
+}
+
+.bore-log-footer-row {
+  display: flex;
+  width: 100%;
+  padding: 3px 6px;
+}
+
+.bore-log-footer-col {
+  box-sizing: border-box;
+  flex: 1;
+}
+
+.bore-log-footer-col.halign-right {
+  text-align: right;
+}
+
+.bore-log-footer-item {
+  font-size: 7px;
+  color: #333;
+  margin: 1px 0;
+}
+
+.bore-log-footer-item .item-label {
+  font-weight: 600;
+}
+
+/* ── Print Styles ─────────────────────────── */
+@media print {
+  .bore-log-selector {
+    display: none;
+  }
+
+  .bore-log-report {
+    page-break-inside: avoid;
+  }
+}

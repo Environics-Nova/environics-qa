@@ -14,7 +14,7 @@ interface NewEventDialogProps {
   trigger?: React.ReactNode;
 }
 
-const eventTypeOptions: EventType[] = ["Drilling", "GWMS", "SV_Sampling", "PVV", "Survey", "Excavation"];
+const eventTypeOptions: EventType[] = ["Drilling", "GWMS", "SVSampling", "PVV", "Survey", "Excavation"];
 
 export const NewEventDialog = ({ project, onSave, trigger }: NewEventDialogProps) => {
   const [open, setOpen] = useState(false);

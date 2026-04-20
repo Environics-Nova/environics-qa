@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -20,7 +20,7 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { CreateDocumentTypeRequest, PropertyDef } from "@/types";
+import { DocumentType, PropertyDef } from "@/types";
 import {
   Select,
   SelectContent,
@@ -34,13 +34,14 @@ const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
 });
 
-interface NewDocumentTypeDialogProps {
+interface EditDocumentTypeDialogProps {
+  documentType: DocumentType | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSave: (data: CreateDocumentTypeRequest) => Promise<void>;
+  onSave: (id: string, properties: PropertyDef[]) => Promise<void>;
 }
 
-export function NewDocumentTypeDialog({ open, onOpenChange, onSave }: NewDocumentTypeDialogProps) {
+export function EditDocumentTypeDialog({ documentType, open, onOpenChange, onSave }: EditDocumentTypeDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [properties, setProperties] = useState<PropertyDef[]>([]);
   const [newPropName, setNewPropName] = useState("");
@@ -51,22 +52,24 @@ export function NewDocumentTypeDialog({ open, onOpenChange, onSave }: NewDocumen
     defaultValues: { name: "" },
   });
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  useEffect(() => {
+    if (documentType && open) {
+      form.reset({ name: documentType.name });
+      setProperties(documentType.properties || []);
+    }
+  }, [documentType, open, form]);
+
+  const onSubmit = async () => {
     if (properties.length === 0) {
       form.setError("root", { type: "custom", message: "At least one property field is required" });
       return;
     }
 
+    if (!documentType?.id) return;
+
     setIsLoading(true);
     try {
-      await onSave({
-        name: values.name,
-        properties: properties,
-      });
-      form.reset();
-      setProperties([]);
-      setNewPropName("");
-      setNewPropType("string");
+      await onSave(documentType.id, properties);
       onOpenChange(false);
     } finally {
       setIsLoading(false);
@@ -87,12 +90,12 @@ export function NewDocumentTypeDialog({ open, onOpenChange, onSave }: NewDocumen
   };
 
   return (
-    <Dialog open={open} onOpenChange={(v) => { if (!isLoading) { onOpenChange(v); if (!v) { form.reset(); setProperties([]); setNewPropName(""); setNewPropType("string"); } } }}>
+    <Dialog open={open} onOpenChange={(v) => { if (!isLoading) { onOpenChange(v); if (!v) { setNewPropName(""); setNewPropType("string"); } } }}>
       <DialogContent className="sm:max-w-[460px]">
         <DialogHeader>
-          <DialogTitle>New Document Type</DialogTitle>
+          <DialogTitle>Edit Document Type Fields</DialogTitle>
           <DialogDescription>
-            Define a document type and its predefined property fields.
+            Manage fields for {documentType?.name}
           </DialogDescription>
         </DialogHeader>
 
@@ -105,8 +108,9 @@ export function NewDocumentTypeDialog({ open, onOpenChange, onSave }: NewDocumen
                 <FormItem>
                   <FormLabel>Document Type Name</FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder="e.g. Lab Report" disabled={isLoading} />
+                    <Input {...field} disabled={true} />
                   </FormControl>
+                  <p className="text-xs text-muted-foreground mt-1">Names are fixed and cannot be changed.</p>
                   <FormMessage />
                 </FormItem>
               )}
@@ -165,12 +169,12 @@ export function NewDocumentTypeDialog({ open, onOpenChange, onSave }: NewDocumen
             </div>
 
             <DialogFooter className="pt-4">
-              <Button type="button" variant="outline" onClick={() => { onOpenChange(false); form.reset(); setProperties([]); setNewPropName(""); setNewPropType("string") }} disabled={isLoading}>
+              <Button type="button" variant="outline" onClick={() => { onOpenChange(false); setNewPropName(""); setNewPropType("string") }} disabled={isLoading}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading} className="gap-2">
                 {isLoading && <Loader2 className="w-4 h-4 animate-spin" />}
-                Create Document Type
+                Save Changes
               </Button>
             </DialogFooter>
           </form>

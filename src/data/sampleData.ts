@@ -4,7 +4,7 @@ import { Project, Event, DocumentType, Document, EventType, Questionnaire, Quest
 export const documentTypes: DocumentType[] = [
   {
     document_type_id: "dt-1",
-    name: "Drilling Log",
+    name: "Borehole Log",
     properties: [
       { name: "Depth", type: "string" },
       { name: "Soil_Type", type: "string" },
@@ -14,7 +14,7 @@ export const documentTypes: DocumentType[] = [
     ]
   {
     document_type_id: "dt-2", 
-    name: "Groundwater Monitoring",
+    name: "GWMS Logs",
     properties: [
       { name: "Well_ID", type: "string" },
       { name: "Water_Level", type: "string" },
@@ -26,7 +26,7 @@ export const documentTypes: DocumentType[] = [
   },
   {
     document_type_id: "dt-3",
-    name: "Soil Sample Analysis",
+    name: "Soil Vapour Log",
     properties: [
       { name: "Sample_ID", type: "string" },
       { name: "Depth", type: "string" },
@@ -37,7 +37,7 @@ export const documentTypes: DocumentType[] = [
   },
   {
     document_type_id: "dt-4",
-    name: "Site Survey Report",
+    name: "Survey Log",
     properties: [
       { name: "Survey_Date", type: "date" },
       { name: "Surveyor", type: "string" },
@@ -96,7 +96,7 @@ export const sampleEvents: Event[] = [
     project: sampleProjects[0],
     start_datetime: "2024-01-20T09:00:00",
     end_datetime: "2024-01-20T17:00:00",
-    event_types: ["Drilling", "SV_Sampling"]
+    event_types: ["Drilling", "SVSampling"]
   },
   {
     event_id: "evt-2",
@@ -120,7 +120,7 @@ export const sampleEvents: Event[] = [
     project: sampleProjects[3],
     start_datetime: "2024-02-10T09:30:00",
     end_datetime: "2024-02-10T15:30:00", 
-    event_types: ["Excavation", "SV_Sampling"]
+    event_types: ["Excavation", "SVSampling"]
   }
 ];
 
@@ -191,16 +191,16 @@ export const getRequiredDocuments = (eventTypes: EventType[]): DocumentType[] =>
   eventTypes.forEach(type => {
     switch(type) {
       case "Drilling":
-        requiredDocs.push(documentTypes[0]); // Drilling Log
+        requiredDocs.push(documentTypes[0]); // Borehole Log
         break;
       case "GWMS": 
-        requiredDocs.push(documentTypes[1]); // Groundwater Monitoring
+        requiredDocs.push(documentTypes[1]); // GWMS Logs
         break;
-      case "SV_Sampling":
-        requiredDocs.push(documentTypes[2]); // Soil Sample Analysis
+      case "SVSampling":
+        requiredDocs.push(documentTypes[2]); // Soil Vapour Log
         break;
       case "Survey":
-        requiredDocs.push(documentTypes[3]); // Site Survey Report
+        requiredDocs.push(documentTypes[3]); // Survey Log
         break;
     }
   });
@@ -266,7 +266,7 @@ export const sampleQuestionnaires: Questionnaire[] = [
     questionnaire_id: "ques-3",
     name: "Soil Contamination Analysis",
     description: "Detailed questionnaire for soil sampling and contamination assessment",
-    event_type: "SV_Sampling",
+    event_type: "SVSampling",
     questions: [sampleQuestions[2], sampleQuestions[3]]
   }
 ];

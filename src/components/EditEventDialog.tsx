@@ -21,7 +21,7 @@ export const EditEventDialog = ({ event, onSave }: EditEventDialogProps) => {
     setIsOpen(false);
   };
 
-  const eventTypeOptions: EventType[] = ["PVV", "GWMS", "Drilling", "SV_Sampling", "Excavation", "Survey"];
+  const eventTypeOptions: EventType[] = ["PVV", "GWMS", "Drilling", "SVSampling", "Excavation", "Survey"];
 
   const handleEventTypeChange = (eventType: EventType, checked: boolean) => {
     if (checked) {

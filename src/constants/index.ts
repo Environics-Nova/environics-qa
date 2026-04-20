@@ -17,12 +17,12 @@ export const ACCEPTED_FILE_EXTENSIONS =
 
 /** Map of event types to their required document type names */
 export const EVENT_TYPE_TO_DOC_TYPE: Record<string, string[]> = {
-  Drilling: ["Drilling Log"],
-  GWMS: ["Groundwater Monitoring"],
-  SV_Sampling: ["Soil Sample Analysis"],
-  Survey: ["Site Survey Report"],
-  PVV: [],
-  Excavation: [],
+  Survey: ["Survey Log"],
+  SVSampling: ["Soil Vapour Log"],
+  Drilling: ["Borehole Log"],
+  PVV: ["Daily field activity log"],
+  Excavation: ["Confirmatory & interim Soil Samples"],
+  GWMS: ["GWMS Logs"],
 };
 
 /** Duration (in ms) after which the success dialog auto-closes */
